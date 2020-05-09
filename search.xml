@@ -21,7 +21,7 @@
   <entry>
     <title>bgp flapping every 3 mins</title>
     <url>/2020/05/09/bgp-flapping-every-3-mins/</url>
-    <content><![CDATA[<h3 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h3><p>拓扑</p>
+    <content><![CDATA[<h3 id="故障描述"><a href="#故障描述" class="headerlink" title="故障描述"></a>故障描述</h3><p>拓扑</p>
 <p><img src="http://qa2m8sna1.bkt.clouddn.com/bgp-1-1.png" alt="bgp1-1 topo"></p>
 <p>1/ N9K-1与N9K-2直连，物理口L2，两端用loopback0(11.11/32与22.22/32)建IBGP邻居，两端loopback互相访问的出口是SVI10与e1/1</p>
 <p>2/ 两端SVI10 MTU 9216, 两端e1/1 MTU 1500</p>
@@ -49,6 +49,36 @@
 ]]></content>
       <tags>
         <tag>bgp</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>N9K I77下client无法通过dhcp获取地址</title>
+    <url>/2020/05/10/unable-to-get-address-from-dhcp-on-I77/</url>
+    <content><![CDATA[<h3 id="故障描述"><a href="#故障描述" class="headerlink" title="故障描述"></a>故障描述</h3><p>拓扑</p>
+<p><img src="http://qa2m8sna1.bkt.clouddn.com/dhcp1-1.png" alt="bgp1-1 topo"></p>
+<p>1/ dhcp server与dhcp client直连N9K 7.0(3)I7(7)，并且同属VLAN103网段</p>
+<p>2/ N9K通过连接client与server的端口的关键配置是LACP &amp; no lacp suspend-individual &amp; trunk native 103</p>
+<p>3/ 客户反馈当有port-channel时，client无法从dhcp server获取地址，而当接口摘除port-channel配置后，就可以拿到地址</p>
+<h3 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h3><p>1/ 客户告知client网卡发包不会带上VLAN_TAG，所以N9K收到client的流量应该识别成native vlan 103<br>另外client在拿到地址前，client网卡是不会关联到LACP的，拿到地址后client网卡会自动关联到LACP mode，所以初始状态下客户需要在N9K上连接client的端口使用命令no lacp suspend-individual来避免N9K因收不到client过来的LACPDU而suspend物理口的情况，所以在该命令作用下，e1/2的初始状态是individual</p>
+<p>2/ 由于是测试环境几乎没有流量，所以在故障状态下，用SPAN_TO_SPU的方式抓e1/2 rx的包，N9K可以抓到client发来的dhcp discover</p>
+<p>3/ 在故障状态下，用SPAN_TO_CPU的方式抓e1/1 tx的包，N9K抓不到client发来的dhcp discover</p>
+<p>4/ 通过2和3，确定丢包点是N9K，下一步就是做elam看丢包原因了，从elam结果中我们可以看到e1/2收到的discover包后，错误地识别成VLAN1，所以自然无法转发到同subnet VLAN103的dhcp server</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">SZYF-A1<span class="number">-201</span>-A06-T1<span class="number">-01</span><span class="number">-04</span><span class="number">-231.4</span>(TAH-elam-insel6)<span class="comment"># set outer l2 src_mac bbbb.bbbb.bbbb dst_mac ffff.ffff.ffff </span></span><br><span class="line">SZYF-A1<span class="number">-201</span>-A06-T1<span class="number">-01</span><span class="number">-04</span><span class="number">-231.4</span>(TAH-elam-insel6)<span class="comment"># start</span></span><br><span class="line">SZYF-A1<span class="number">-201</span>-A06-T1<span class="number">-01</span><span class="number">-04</span><span class="number">-231.4</span>(TAH-elam-insel6)<span class="comment"># report</span></span><br><span class="line">Initting block addresses</span><br><span class="line"></span><br><span class="line">SUGARBOWL ELAM REPORT SUMMARY</span><br><span class="line">slot - <span class="number">1</span>, asic - <span class="number">0</span>, slice - <span class="number">0</span></span><br><span class="line">============================</span><br><span class="line"></span><br><span class="line">Incoming Interface: Eth1/<span class="number">2</span>					&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt; dhcp包从e1/<span class="number">2</span>进来</span><br><span class="line">Src Idx : <span class="number">0x5</span>, Src BD : <span class="number">1</span>					&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt; Src BD表示流量收到别识别成的VLAN_ID，此处有误，应该是VLAN103才对</span><br><span class="line">Outgoing Interface Info: met_ptr <span class="number">0</span></span><br><span class="line"></span><br><span class="line">Packet Type: IPv4</span><br><span class="line"></span><br><span class="line">Dst MAC address: FF:FF:FF:FF:FF:FF</span><br><span class="line">Src MAC address: B8:BB:BB:BB:BB:BB</span><br><span class="line"></span><br><span class="line">Dst IPv4 address: <span class="number">255.255</span><span class="number">.255</span><span class="number">.255</span></span><br><span class="line">Src IPv4 address: <span class="number">0.0</span><span class="number">.0</span><span class="number">.0</span></span><br><span class="line">Ver     =  <span class="number">4</span>, DSCP    =    <span class="number">4</span>, Don<span class="string">'t Fragment = 0</span></span><br><span class="line"><span class="string">Proto   = 17, TTL     =  128, More Fragments = 0</span></span><br><span class="line"><span class="string">Hdr len = 20, Pkt len =  328, Checksum       = 0x3996</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">L4 Protocol  : 17</span></span><br><span class="line"><span class="string">UDP Dst Port : 67</span></span><br><span class="line"><span class="string">UDP Src Port : 68</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Drop Info:									&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt; Drop Info要是不为空，通常表示这个包丢了，并且会记录drop reason</span></span><br><span class="line"><span class="string">----------</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">LUA:</span></span><br><span class="line"><span class="string">LUB:</span></span><br><span class="line"><span class="string">LUC:</span></span><br><span class="line"><span class="string">LUD:</span></span><br><span class="line"><span class="string">  OUTER_IDS_G0</span></span><br><span class="line"><span class="string">Final Drops:</span></span><br><span class="line"><span class="string">ELAM not triggered yet on slot - 1, asic - 0, slice - 1</span></span><br></pre></td></tr></table></figure>
+
+<p>5/ 用下面的命令发现l2一致性校验不通过，并且指示native vlan软硬件编程不同步，这也和上述elam结果一致</p>
+<p>N9K# sh consistency-checker l2 switchport interface ethernet 1/2<br>Checking for interface: Ethernet1/2<br>SW and HW trunk native VLAN not same<br>SW Trunk Native VLAN: 103<br>HW Trunk Native VLAN” 1<br>Seoul2# 2020 Jan  8 13:22:56 Seoul2 %$ VDC-1 %$ vshd: CC_SWITCHPORT: Consistency Check: FAILED        &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</p>
+<p>6/ 最后，这个问题是中了bug CSCvr81063 - Native VLAN hardware mis-programming happens in tah after upgrade to 7.0.3.I7.7 with LACP individual</p>
+<p>触发条件就是N9K I77 &amp; N9K lacp suspend-individual &amp; client NIC non-lacp</p>
+<p>bug链接：<br><a href="https://bst.cloudapps.cisco.com/bugsearch/bug/CSCvr81063" target="_blank" rel="noopener">https://bst.cloudapps.cisco.com/bugsearch/bug/CSCvr81063</a></p>
+<p>bug smu链接：<br><a href="https://software.cisco.com/download/home/286312403/type/286278856/release/7.0(3)I7(7)?catid=268438038" target="_blank" rel="noopener">https://software.cisco.com/download/home/286312403/type/286278856/release/7.0(3)I7(7)?catid=268438038</a></p>
+<h3 id="不改动现有配置的解决方法"><a href="#不改动现有配置的解决方法" class="headerlink" title="不改动现有配置的解决方法"></a>不改动现有配置的解决方法</h3><p>由于是中了BUG，并且该bug有SMU可打，所以解决方法自然是要么打SMU补丁，要么升级到bug修复版本</p>
+<p>打SMU步骤可以参考如下</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="number">1</span>/ install add bootflash:nxos.CSCvr81063-n9k_ALL<span class="number">-1.0</span><span class="number">.0</span><span class="number">-7.0</span><span class="number">.3</span>.I7<span class="number">.7</span>.lib32_n9000.rpm</span><br><span class="line"></span><br><span class="line"><span class="number">2</span>/ install activate nxos.CSCvr81063-n9k_ALL<span class="number">-1.0</span><span class="number">.0</span><span class="number">-7.0</span><span class="number">.3</span>.I7<span class="number">.7</span>.lib32_n9000.rpm</span><br><span class="line"></span><br><span class="line"><span class="number">3</span>/ install commit nxos.CSCvr81063-n9k_ALL<span class="number">-1.0</span><span class="number">.0</span><span class="number">-7.0</span><span class="number">.3</span>.I7<span class="number">.7</span>.lib32_n9000.rpm</span><br></pre></td></tr></table></figure>
+
+<p>最后客户反馈打上SMU后，一致性校验通过，故障解决，完结撒花。</p>
+]]></content>
+      <tags>
+        <tag>dhcp</tag>
       </tags>
   </entry>
 </search>
