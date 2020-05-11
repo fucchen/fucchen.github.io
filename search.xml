@@ -244,4 +244,253 @@
         <tag>bgp</tag>
       </tags>
   </entry>
+  <entry>
+    <title>9736FX QSA GLC-TE</title>
+    <url>/2020/05/12/9736FX-QSA-GLC-TE/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>CRC input error output error cut-through</title>
+    <url>/2020/05/11/CRC-input-error-output-error-cut-through/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>3548 control-plane broken</title>
+    <url>/2020/05/12/3548-control-plane-broken/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>N3K reserved vlan</title>
+    <url>/2020/05/12/N3K-reserved-vlan/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>N3K high latency in specific vlan</title>
+    <url>/2020/05/11/N3K-high-latency-in-specific-vlan/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>N3K specific traffic packet loss</title>
+    <url>/2020/05/11/N3K-specific-traffic-packet-loss/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>N3K traffic uneven</title>
+    <url>/2020/05/11/N3K-traffic-uneven/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>N9K specific traffic ping packet loss</title>
+    <url>/2020/05/11/N9K-specific-traffic-ping-packet-loss/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>N9K T2 specific traffic packet loss</title>
+    <url>/2020/05/11/N9K-T2-specific-traffic-packet-loss/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>backup routing is not effective</title>
+    <url>/2020/05/11/backup-routing-is-not-effective/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>NVE loopback down for 3mins after VTEP reload</title>
+    <url>/2020/05/11/NVE-loopback-down-for-3mins-after-VTEP-reload/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>buffer exausted cause output discard</title>
+    <url>/2020/05/11/buffer-exausted-cause-output-discard/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>can&#39;t receive multicast traffic every 5 mins</title>
+    <url>/2020/05/11/can-t-receive-multicast-traffic-every-5-mins/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>dhcp smart relay secondary ip</title>
+    <url>/2020/05/11/dhcp-smart-relay-secondary-ip/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>direct ping fail due to empty copp</title>
+    <url>/2020/05/11/direct-ping-fail-due-to-empty-copp/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>eigrp flapping</title>
+    <url>/2020/05/11/eigrp-flapping/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>fex port can not forward traffic with vlan tag</title>
+    <url>/2020/05/11/fex-port-can-not-forward-traffic-with-vlan-tag/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>edge tcn packet loss</title>
+    <url>/2020/05/11/edge-tcn-packet-loss/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>fex runt input error</title>
+    <url>/2020/05/12/fex-runt-input-error/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>file transfer too slow</title>
+    <url>/2020/05/11/file-transfer-too-slow/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>internal link flapping cause output error</title>
+    <url>/2020/05/11/internal-link-flapping-cause-output-error/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>lacp err-disable</title>
+    <url>/2020/05/11/lacp-err-disable/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>multicast nbm ospf</title>
+    <url>/2020/05/12/multicast-nbm-ospf/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>netflow &amp; sflow</title>
+    <url>/2020/05/11/netflow-sflow/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>one of leaf uplink down network interruption</title>
+    <url>/2020/05/11/one-of-leaf-uplink-down-network-interruption/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>ospf bgp route redistribution issue</title>
+    <url>/2020/05/11/ospf-bgp-route-redistribution-issue/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>ospf stuck in exstart</title>
+    <url>/2020/05/11/ospf-stuck-in-exstart/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>ospf external route preference</title>
+    <url>/2020/05/11/ospf-external-route-preference/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>pfc</title>
+    <url>/2020/05/11/pfc/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>port enabled lacp connected to server err-disable</title>
+    <url>/2020/05/11/port-enabled-lacp-connected-to-server-err-disable/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>reload cause packet loss by lacp and stp</title>
+    <url>/2020/05/11/reload-cause-packet-loss-by-lacp-and-stp/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>reload cause packet loss by peer-switch</title>
+    <url>/2020/05/11/reload-cause-packet-loss-by-peer-switch/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>replace SUP step</title>
+    <url>/2020/05/11/replace-SUP-step/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>snmp monitor SFP DOM</title>
+    <url>/2020/05/11/snmp-monitor-SFP-DOM/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>route-map with acl not effective</title>
+    <url>/2020/05/11/route-map-with-acl-not-effective/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>ssh unable to login the device</title>
+    <url>/2020/05/11/ssh-unable-to-login-the-device/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>sla down</title>
+    <url>/2020/05/11/sla-down/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>tcp retransmission and sla issue</title>
+    <url>/2020/05/11/tcp-retransmission-and-sla-issue/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>tcam</title>
+    <url>/2020/05/11/tcam/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>unable to form ospf neighbor</title>
+    <url>/2020/05/11/unable-to-form-ospf-neighbor/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>unable to receive any multicast traffic</title>
+    <url>/2020/05/11/unable-to-receive-any-multicast-traffic/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>uneven&#39;</title>
+    <url>/2020/05/11/uneven/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>vpc peer-switch peer-gateway peer-router</title>
+    <url>/2020/05/11/vpc-peer-switch-peer-gateway-peer-router/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>vxlan arp suppression</title>
+    <url>/2020/05/11/vxlan-arp-suppression/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>vpc upgrade downlink IOS device err-disable</title>
+    <url>/2020/05/11/vpc-upgrade-downlink-IOS-device-err-disable/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>vxlan network loop local-as allow-as</title>
+    <url>/2020/05/11/vxlan-network-loop-local-as-allow-as/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>vxlan double rmac问题导致丢包</title>
+    <url>/2020/05/11/vxlan-packet-loss/</url>
+    <content><![CDATA[<h3 id="故障描述"><a href="#故障描述" class="headerlink" title="故障描述"></a>故障描述</h3><p>这个故障有点复杂，很久以前处理的故障了，先放放，回头再想想怎么更。</p>
+]]></content>
+      <tags>
+        <tag>vxlan</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>3500/3000 upgrade to 934 fail</title>
+    <url>/2020/05/11/3500-3000-upgrade-to-934-fail/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>burst arp and ICMPv6</title>
+    <url>/2020/05/11/burst-arp-and-ICMPv6/</url>
+    <content><![CDATA[]]></content>
+  </entry>
 </search>
