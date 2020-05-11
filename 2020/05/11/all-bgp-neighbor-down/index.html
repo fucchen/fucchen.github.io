@@ -87,7 +87,7 @@
 <meta property="og:description" content="故障描述实际拓扑不好画，大概描述下，9516，和几百个TOR建了bgp邻居 故障是bgp邻居全down，嗯还是两台9516都挂球子了，自行脑补这事儿炸毛的场景（万幸是客户冗余做得好，没什么实际业务影响） 当时邻居全down后，客户把整机断电后开始要查，断电后通常syslog&#x2F;bgp进程什么的log都刷没了，信息都不知道采什么，真酸爽。 唯一能追溯到有用的log报只有下面两条。 Could not">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2020-05-11T13:53:42.000Z">
-<meta property="article:modified_time" content="2020-05-11T14:56:03.690Z">
+<meta property="article:modified_time" content="2020-05-11T15:00:46.501Z">
 <meta property="article:author" content="cfc">
 <meta property="article:tag" content="bgp">
 <meta name="twitter:card" content="summary">
@@ -354,7 +354,7 @@
 <h3 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h3><p>1/ 优化网络，后来证实大部分路由都是无用路由，最后客户优化完印象中最后就剩几千条路由，优化后共享内存利用率是很低的</p>
 <p>2/ 9.3.1开始共享内存从64M扩到了256M，所以升级也可以</p>
 <p>回过头再看这个故障本身并不复杂，这里最关键的地方是故障重现，而复现方法无人尝试过，因此碰壁多次。</p>
-<p>该故障印象最深刻的地方是：在Youtube上自学用IxNetwork打各种路由 &amp; 建各种邻居的方法，解了case。</p>
+<p>该故障印象最深刻的地方是：在Youtube上自学用IxNetwork打各种路由 &amp; 建各种邻居的方法，解了case，也感谢同事们提出了写宝贵思路和方向。</p>
 
       
     </div>
