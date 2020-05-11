@@ -36,7 +36,7 @@
 <p>3/ 为了控制erspan流量大小，在N9K做了erspan truncation，即在erspan session中配置了MTU 1000</p>
 <p>4/ 3172上用ethanalyzer抓包，看不到任何erspan流量</p>
 <h3 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h3><p>1/ IXIA打出来的frame size以及原始IP header中的length是2000，启用erspan truncation后，frame size被强行截成1000+erspan header size，所以把沿途传输的erspan包抓下来如下，对于inner ip header，wireshark显示IPv4 total length exceed packet length</p>
-<p><img src="http://qa2m8sna1.bkt.clouddn.com/erspan1-2.png" alt="erspan1-1 topo"></p>
+<p><img src="http://qa2m8sna1.bkt.clouddn.com/erspan1-3.png" alt="erspan1-3 topo"></p>
 <p>N9K默认会检查包的IP header length部分，对于IP-IP tunnel的报文(此处是erspan)会检查内外层ip header的length做校验，和frame size进行比较，看是否有异常，所以这个包来说，由于包被截过，导致inner ip header length &gt; frame size，这样的包会被N9K-08认做错包，记output error错包从Po20，又N9K默认是cut-through模式，所以沿途N9K能看到的现象是，N9K-04入接口有input error，N9K-04出接口有output error，最后3172收到后也记input error，包在接口丢弃，故ethanalyzer抓不到erspan流量</p>
 <h3 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h3><p>关闭inner packet length校验功能，关闭后output error / input error问题消失，并且3172就能通过ethanalyzer收到所有erspan流量了</p>
 ]]></content>
