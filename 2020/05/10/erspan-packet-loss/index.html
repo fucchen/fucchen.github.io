@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="Hexo, NexT" />
+  <meta name="keywords" content="erspan," />
 
 
 
@@ -79,13 +79,21 @@
 
 
 
-<meta property="og:type" content="website">
-<meta property="og:title" content="fucchen.dc">
-<meta property="og:url" content="http://yoursite.com/tags/arp/index.html">
+<meta name="description" content="涉及的主机名&#x2F;IP&#x2F;MAC&#x2F;端口编号已改  故障描述由于问题能在LAB重现，就直接描述LAB的情况了 拓扑  1&#x2F; IXIA向N9K-09推300pps的tcp流量，packet size &#x3D;&#x3D; 2000 2&#x2F; N9K-09上配置了erspan将e1&#x2F;4收到的流量copy一份，并发生到erspan destination 3172上，erspan传输路径如拓扑所示 3&#x2F; 为了控制erspan流量">
+<meta property="og:type" content="article">
+<meta property="og:title" content="启用erspan truncation后丢包">
+<meta property="og:url" content="http://yoursite.com/2020/05/10/erspan-packet-loss/index.html">
 <meta property="og:site_name" content="fucchen.dc">
+<meta property="og:description" content="涉及的主机名&#x2F;IP&#x2F;MAC&#x2F;端口编号已改  故障描述由于问题能在LAB重现，就直接描述LAB的情况了 拓扑  1&#x2F; IXIA向N9K-09推300pps的tcp流量，packet size &#x3D;&#x3D; 2000 2&#x2F; N9K-09上配置了erspan将e1&#x2F;4收到的流量copy一份，并发生到erspan destination 3172上，erspan传输路径如拓扑所示 3&#x2F; 为了控制erspan流量">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://qa2m8sna1.bkt.clouddn.com/erspan1-1.png">
+<meta property="og:image" content="http://qa2m8sna1.bkt.clouddn.com/erspan1-2.png">
+<meta property="article:published_time" content="2020-05-10T05:04:42.000Z">
+<meta property="article:modified_time" content="2020-05-10T07:35:40.983Z">
 <meta property="article:author" content="cfc">
+<meta property="article:tag" content="erspan">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://qa2m8sna1.bkt.clouddn.com/erspan1-1.png">
 
 
 
@@ -115,13 +123,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/tags/arp/"/>
+  <link rel="canonical" href="http://yoursite.com/2020/05/10/erspan-packet-loss/"/>
 
 
 
 
 
-  <title>Tag: arp | fucchen.dc</title>
+  <title>启用erspan truncation后丢包 | fucchen.dc</title>
   
 
 
@@ -140,7 +148,7 @@
     
   
 
-  <div class="container sidebar-position-right ">
+  <div class="container sidebar-position-right page-post-detail">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -248,54 +256,160 @@
           <div id="content" class="content">
             
 
-  
-  
-  
-  <div class="post-block tag">
+  <div id="posts" class="posts-expand">
+    
 
-    <div id="posts" class="posts-collapse">
-      <div class="collection-title">
-        <h1>arp<small>Tag</small>
-        </h1>
-      </div>
+  
 
-      
-        
+  
+  
+  
 
   <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/05/10/erspan-packet-loss/">
 
-      <h2 class="post-title">
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="cfc">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="fucchen.dc">
+    </span>
+
+    
+      <header class="post-header">
+
         
-            <a class="post-title-link" href="/2020/05/10/hsrp-dual-active/" itemprop="url">
-              
-                <span itemprop="name">N3548 hsrp双活，直连ping不通</span>
-              
-            </a>
         
-      </h2>
+          <h1 class="post-title" itemprop="name headline">启用erspan truncation后丢包</h1>
+        
 
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2020-05-10T07:58:20+08:00"
-              content="2020-05-10" >
-          05-10
-        </time>
-      </div>
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-05-10T13:04:42+08:00">
+                2020-05-10
+              </time>
+            
 
-    </header>
-  </article>
+            
 
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <ul>
+<li>涉及的主机名/IP/MAC/端口编号已改</li>
+</ul>
+<h3 id="故障描述"><a href="#故障描述" class="headerlink" title="故障描述"></a>故障描述</h3><p>由于问题能在LAB重现，就直接描述LAB的情况了</p>
+<p>拓扑</p>
+<p><img src="http://qa2m8sna1.bkt.clouddn.com/erspan1-1.png" alt="erspan1-1 topo"></p>
+<p>1/ IXIA向N9K-09推300pps的tcp流量，packet size == 2000</p>
+<p>2/ N9K-09上配置了erspan将e1/4收到的流量copy一份，并发生到erspan destination 3172上，erspan传输路径如拓扑所示</p>
+<p>3/ 为了控制erspan流量大小，在N9K做了erspan truncation，即在erspan session中配置了MTU 1000</p>
+<p>4/ 3172上用ethanalyzer抓包，看不到任何erspan流量</p>
+<h3 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h3><p>1/ IXIA打出来的frame size以及原始IP header中的length是2000，启用erspan truncation后，frame size被强行截成1000+erspan header size，所以把沿途传输的erspan包抓下来如下，对于inner ip header，wireshark显示IPv4 total length exceed packet length</p>
+<p><img src="http://qa2m8sna1.bkt.clouddn.com/erspan1-2.png" alt="erspan1-1 topo"></p>
+<p>N9K默认会检查包的IP header length部分，对于IP-IP tunnel的报文(此处是erspan)会检查内外层ip header的length做校验，和frame size进行比较，看是否有异常，所以这个包来说，由于包被截过，导致inner ip header length &gt; frame size，这样的包会被N9K-08认做错包，记output error错包从Po20，又N9K默认是cut-through模式，所以沿途N9K能看到的现象是，N9K-04入接口有input error，N9K-04出接口有output error，最后3172收到后也记input error，包在接口丢弃，故ethanalyzer抓不到erspan流量</p>
+<h3 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h3><p>关闭inner packet length校验功能，关闭后output error / input error问题消失，并且3172就能通过ethanalyzer收到所有erspan流量了</p>
 
       
     </div>
+    
+    
+    
 
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/erspan/" rel="tag"># erspan</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/05/10/copp/" rel="next" title="mtu-failure copp计数问题">
+                <i class="fa fa-chevron-left"></i> mtu-failure copp计数问题
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
   </div>
   
   
   
+  </article>
 
-  
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
 
 
           </div>
@@ -303,6 +417,10 @@
 
 
           
+
+  
+
+
 
         </div>
         
@@ -323,8 +441,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -375,6 +502,22 @@
         </div>
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#故障描述"><span class="nav-number">1.</span> <span class="nav-text">故障描述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#分析"><span class="nav-number">2.</span> <span class="nav-text">分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#解决方法"><span class="nav-number">3.</span> <span class="nav-text">解决方法</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
@@ -515,6 +658,10 @@
 
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
 
   
 
