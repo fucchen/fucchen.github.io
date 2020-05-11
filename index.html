@@ -375,7 +375,7 @@
 <p>Workaround:<br>Change the ingress interface from L3 to L2 (access or trunk)<br>Or<br>Use system nve infra-vlans  when the vlan’s SVI is in default VRF</p>
 <p>简单说就是一台VxLAN VTEP设备，从连spine的L3口收到erspan流量的时候，并且准备将该流量从一个L2 trunk转发出去的时候，这个dot1q vlan tag会没打上就发出去，导致的结果就是下游设备收到带VLAN TAG的正常erspan流量，导致包全在下游设备丢弃。</p>
 <h3 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h3><p>这个问题有好几个workaround，</p>
-<p>1/ 让包出去的时候，不打TAG也能让下游识别成VLAN 101，所以自然是把这个trunk链路的native vlan改成103，这样N9K-08发出不带VLAN TAG的流量，下游就直接认为是VLAN103，这个LAB测试过可行。 但这个可能实际网络中没条件改，</p>
+<p>1/ 让包出去的时候，不打TAG也能让下游识别成VLAN 101，所以自然是把这个trunk链路的native vlan改成101，这样N9K-08发出不带VLAN TAG的流量，下游就直接认为是VLAN101，这个LAB测试过可行。 但这个可能实际网络中没条件改，</p>
 <p>2/ 把VLAN 101关联到infra-vlan中，这个LAB测试可行，最后客户也用的这种，infra-vlan典型的两个场景是：VTEP传IP-IP tunnel流量 &amp; vPC vxlan leaf对应uplink failover场景跨peer-link建bgp邻居等涉及流量备用路径的功能，有机会的话专门写一篇infra-vlan介绍。一般推荐把VTEP上的default vlan关联到infra-vlan，来传一些特殊的非vxlan流量。</p>
 <p>3/ 流量入接口改成L2，感觉已经成型的有业务的网络，不太可能用这种，所以LAB也没再去验证可行性。</p>
 <p>这个故障本身还算复杂，加上中间还衍生了很多其他问题，这里也只是记录了其中一个，所有问题彻底搞完消耗了很多精力，不过好在全解了，也算欣慰，完结撒花！！！</p>
