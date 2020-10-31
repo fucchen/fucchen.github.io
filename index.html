@@ -907,7 +907,7 @@
 </ul>
 <h3 id="故障描述"><a href="#故障描述" class="headerlink" title="故障描述"></a>故障描述</h3><p>由于问题能在LAB重现，就直接描述LAB的情况了</p>
 <p>拓扑最小化精简了如下，确定实际转发路径前，网络涉及的设备估计至少20台以上</p>
-<p><img src="http://qa2m8sna1.bkt.clouddn.com/erspan1-1.png" alt="erspan1-1 topo"></p>
+<p><img src="/images/erspan1-1.png" alt="erspan1-1 topo"></p>
 <p>1/ IXIA向N9K-09推300pps的tcp流量，packet size == 2000</p>
 <p>2/ N9K-09上配置了erspan将e1/4收到的流量copy一份，并发生到erspan destination 3172上，erspan传输路径如拓扑所示</p>
 <p>3/ 3172上用ethanalyzer抓包，看不到任何erspan流量，这个地方取决于原始流量大小，有小包的话，小包可能不丢</p>
@@ -1071,13 +1071,13 @@
 </ul>
 <h3 id="故障描述"><a href="#故障描述" class="headerlink" title="故障描述"></a>故障描述</h3><p>由于问题能在LAB重现，就直接描述LAB的情况了</p>
 <p>拓扑</p>
-<p><img src="http://qa2m8sna1.bkt.clouddn.com/erspan1-1.png" alt="erspan1-1 topo"></p>
+<p><img src="/images/erspan1-1.png" alt="erspan1-1 topo"></p>
 <p>1/ IXIA向N9K-09推300pps的tcp流量，packet size == 2000</p>
 <p>2/ N9K-09上配置了erspan将e1/4收到的流量copy一份，并发生到erspan destination 3172上，erspan传输路径如拓扑所示</p>
 <p>3/ 为了控制erspan流量大小，在N9K做了erspan truncation，即在erspan session中配置了MTU 1000</p>
 <p>4/ 3172上用ethanalyzer抓包，看不到任何erspan流量</p>
 <h3 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h3><p>1/ IXIA打出来的frame size以及原始IP header中的length是2000，启用erspan truncation后，frame size被强行截成1000+erspan header size，所以把沿途传输的erspan包抓下来如下，对于inner ip header，wireshark显示IPv4 total length exceed packet length</p>
-<p><img src="http://qa2m8sna1.bkt.clouddn.com/erspan1-3.png" alt="erspan1-3 topo"></p>
+<p><img src="/images/erspan1-3.png" alt="erspan1-3 topo"></p>
 <p>N9K默认会检查包的IP header length部分，对于IP-IP tunnel的报文(此处是erspan)会检查内外层ip header的length做校验，和frame size进行比较，看是否有异常，所以这个包来说，由于包被截过，导致inner ip header length &gt; frame size，这样的包会被N9K-08认做错包，记output error错包从Po20，又N9K默认是cut-through模式，所以沿途N9K能看到的现象是，N9K-04入接口有input error，N9K-04出接口有output error，最后3172收到后也记input error，包在接口丢弃，故ethanalyzer抓不到erspan流量</p>
 <h3 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h3><p>关闭inner packet length校验功能，关闭后output error / input error问题消失，并且3172就能通过ethanalyzer收到所有erspan流量了</p>
 
@@ -1336,7 +1336,7 @@
 <li>涉及的主机名/IP/MAC/端口编号已改</li>
 </ul>
 <h3 id="故障描述"><a href="#故障描述" class="headerlink" title="故障描述"></a>故障描述</h3><p>拓扑</p>
-<p><img src="http://qa2m8sna1.bkt.clouddn.com/arp1-1.png" alt="arp1-1 topo"></p>
+<p><img src="/images/arp1-1.png" alt="arp1-1 topo"></p>
 <p>1/ N3548软件版本7.0(3)I7(6)</p>
 <p>2/ SVI101这个hsrp instance双活dual active</p>
 <p>3/ 客户反馈两边SVI101互ping不通，互联的物理口配置是trunk &amp; allow all vlan</p>
