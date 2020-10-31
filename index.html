@@ -1622,12 +1622,6 @@
         
           
             <h3 id="故障描述"><a href="#故障描述" class="headerlink" title="故障描述"></a>故障描述</h3><p>拓扑</p>
-<div style='display: none'>
-
-<img src="/images/bgp-1-1.png" width=50% height=50% align=center/>
-
-</div>s
-
 <p>1/ N9K-1与N9K-2直连，物理口L2，两端用loopback0(11.11/32与22.22/32)建IBGP邻居，两端loopback互相访问的出口是SVI10与e1/1</p>
 <p>2/ 两端SVI10 MTU 9216, 两端e1/1 MTU 1500</p>
 <p>3/ bgp每隔3分钟flap一次，log显示down的原因是holdtimer expire</p>
