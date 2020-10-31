@@ -119,7 +119,7 @@
     <title>N9K I77下client无法通过dhcp获取地址</title>
     <url>/2020/05/10/unable-to-get-address-from-dhcp-on-I77/</url>
     <content><![CDATA[<h3 id="故障描述"><a href="#故障描述" class="headerlink" title="故障描述"></a>故障描述</h3><p>拓扑</p>
-<p><img src="http://qa2m8sna1.bkt.clouddn.com/dhcp1-1.png" alt="bgp1-1 topo"></p>
+<p><img src="/images/dhcp1-1.png" alt="dhcp1-1 topo"></p>
 <p>1/ dhcp server与dhcp client直连N9K 7.0(3)I7(7)，并且同属VLAN103网段</p>
 <p>2/ N9K通过连接client与server的端口的关键配置是LACP &amp; no lacp suspend-individual &amp; trunk native 103</p>
 <p>3/ 客户反馈当有port-channel时，client无法从dhcp server获取地址，而当接口摘除port-channel配置后，就可以拿到地址</p>
@@ -268,7 +268,7 @@
 </ul>
 <h3 id="故障描述"><a href="#故障描述" class="headerlink" title="故障描述"></a>故障描述</h3><p>这个故障有点久，故障描述什么的只能大概齐回忆写一下</p>
 <p>拓扑：</p>
-<p><img src="http://qa2m8sna1.bkt.clouddn.com/VxLAN1-1.png" alt="vxlan1-1 topo"></p>
+<p><img src="/images/VxLAN1-1.png" alt="vxlan1-1 topo"></p>
 <p>新上环境，两个问题</p>
 <p>问题1：两台leaf的show nve peer看不到border-leaf</p>
 <p>问题2：PC1 136.6 ping 132.6不通，不同网段</p>
