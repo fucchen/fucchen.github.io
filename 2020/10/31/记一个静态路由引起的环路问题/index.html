@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="arp," />
+  <meta name="keywords" content="Hexo, NexT" />
 
 
 
@@ -79,20 +79,19 @@
 
 
 
-<meta name="description" content="涉及的主机名&#x2F;IP&#x2F;MAC&#x2F;端口编号已改  故障描述拓扑  1&#x2F; N3548软件版本7.0(3)I7(6) 2&#x2F; SVI101这个hsrp instance双活dual active 3&#x2F; 客户反馈两边SVI101互ping不通，互联的物理口配置是trunk &amp; allow all vlan 分析先从SVI互ping不通的问题切入排查 1&#x2F; ping不通显示Destination Hos">
+<meta name="description" content="故障描述拓扑  先介绍下大体背景 VxLAN环境，ssp01a和ssp01b为spine并是RR, leaf01a和leaf02a为leaf，并跑vPC，leaf01a为vPC secondary 两台leaf上配置了出口静态缺省路由(红色箭头，两台leaf通过0.0&#x2F;32去往8.8)静态路由关联的是接口VLAN1350，如下: vrf context test  ip route 0.0.0.0">
 <meta property="og:type" content="article">
-<meta property="og:title" content="N3548 hsrp双活，直连ping不通">
-<meta property="og:url" content="http://yoursite.com/2020/05/10/hsrp-dual-active/index.html">
+<meta property="og:title" content="一个静态路由引起的环路问题">
+<meta property="og:url" content="http://yoursite.com/2020/10/31/%E8%AE%B0%E4%B8%80%E4%B8%AA%E9%9D%99%E6%80%81%E8%B7%AF%E7%94%B1%E5%BC%95%E8%B5%B7%E7%9A%84%E7%8E%AF%E8%B7%AF%E9%97%AE%E9%A2%98/index.html">
 <meta property="og:site_name" content="fucchen.dc">
-<meta property="og:description" content="涉及的主机名&#x2F;IP&#x2F;MAC&#x2F;端口编号已改  故障描述拓扑  1&#x2F; N3548软件版本7.0(3)I7(6) 2&#x2F; SVI101这个hsrp instance双活dual active 3&#x2F; 客户反馈两边SVI101互ping不通，互联的物理口配置是trunk &amp; allow all vlan 分析先从SVI互ping不通的问题切入排查 1&#x2F; ping不通显示Destination Hos">
+<meta property="og:description" content="故障描述拓扑  先介绍下大体背景 VxLAN环境，ssp01a和ssp01b为spine并是RR, leaf01a和leaf02a为leaf，并跑vPC，leaf01a为vPC secondary 两台leaf上配置了出口静态缺省路由(红色箭头，两台leaf通过0.0&#x2F;32去往8.8)静态路由关联的是接口VLAN1350，如下: vrf context test  ip route 0.0.0.0">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://yoursite.com/images/arp1-1.png">
-<meta property="article:published_time" content="2020-05-09T23:58:20.000Z">
-<meta property="article:modified_time" content="2020-10-31T03:16:13.304Z">
+<meta property="og:image" content="http://yoursite.com/images/isis-bgp-loop.png">
+<meta property="article:published_time" content="2020-10-31T03:48:27.000Z">
+<meta property="article:modified_time" content="2020-11-04T04:04:41.386Z">
 <meta property="article:author" content="cfc">
-<meta property="article:tag" content="arp">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://yoursite.com/images/arp1-1.png">
+<meta name="twitter:image" content="http://yoursite.com/images/isis-bgp-loop.png">
 
 
 
@@ -122,13 +121,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2020/05/10/hsrp-dual-active/"/>
+  <link rel="canonical" href="http://yoursite.com/2020/10/31/记一个静态路由引起的环路问题/"/>
 
 
 
 
 
-  <title>N3548 hsrp双活，直连ping不通 | fucchen.dc</title>
+  <title>一个静态路由引起的环路问题 | fucchen.dc</title>
   
 
 
@@ -269,7 +268,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/05/10/hsrp-dual-active/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/10/31/%E8%AE%B0%E4%B8%80%E4%B8%AA%E9%9D%99%E6%80%81%E8%B7%AF%E7%94%B1%E5%BC%95%E8%B5%B7%E7%9A%84%E7%8E%AF%E8%B7%AF%E9%97%AE%E9%A2%98/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="cfc">
@@ -286,7 +285,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">N3548 hsrp双活，直连ping不通</h1>
+          <h1 class="post-title" itemprop="name headline">一个静态路由引起的环路问题</h1>
         
 
         <div class="post-meta">
@@ -298,8 +297,8 @@
               
                 <span class="post-meta-item-text">Posted on</span>
               
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-05-10T07:58:20+08:00">
-                2020-05-10
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-10-31T11:48:27+08:00">
+                2020-10-31
               </time>
             
 
@@ -336,34 +335,45 @@
       
 
       
-        <ul>
-<li>涉及的主机名/IP/MAC/端口编号已改</li>
+        <h3 id="故障描述"><a href="#故障描述" class="headerlink" title="故障描述"></a>故障描述</h3><p>拓扑</p>
+<p><img src="/images/isis-bgp-loop.png" alt="isis-bgp-loop topo"></p>
+<p>先介绍下大体背景</p>
+<p>VxLAN环境，ssp01a和ssp01b为spine并是RR, leaf01a和leaf02a为leaf，并跑vPC，leaf01a为vPC secondary</p>
+<p>两台leaf上配置了出口静态缺省路由(红色箭头，两台leaf通过0.0/32去往8.8)静态路由关联的是接口VLAN1350，如下:</p>
+<p>vrf context test<br>  ip route 0.0.0.0/0 172.x.x.103    // 172.x.x.103印象是VLAN1350所在直连网段的一个NH</p>
+<p>随后leaf上两个动作</p>
+<ul>
+<li>将静态路由0.0/0通告到bgp evpn中</li>
+<li>将直连路由vlan1350通告到bgp evpn中</li>
 </ul>
-<h3 id="故障描述"><a href="#故障描述" class="headerlink" title="故障描述"></a>故障描述</h3><p>拓扑</p>
-<p><img src="/images/arp1-1.png" alt="arp1-1 topo"></p>
-<p>1/ N3548软件版本7.0(3)I7(6)</p>
-<p>2/ SVI101这个hsrp instance双活dual active</p>
-<p>3/ 客户反馈两边SVI101互ping不通，互联的物理口配置是trunk &amp; allow all vlan</p>
-<h3 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h3><p>先从SVI互ping不通的问题切入排查</p>
-<p>1/ ping不通显示Destination Host Unreachable，说明3548-1解析不到3548-2 SVI101的</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">N3548<span class="number">-1</span><span class="comment"># ping 10.1.1.3</span></span><br><span class="line">PING <span class="number">10.1</span><span class="number">.1</span><span class="number">.3</span> (<span class="number">10.1</span><span class="number">.1</span><span class="number">.3</span>): <span class="number">56</span> data bytes</span><br><span class="line"><span class="number">36</span> bytes <span class="keyword">from</span> <span class="number">10.1</span><span class="number">.1</span><span class="number">.3</span>: Destination Host Unreachable</span><br><span class="line">Request <span class="number">0</span> timed out</span><br><span class="line"><span class="number">36</span> bytes <span class="keyword">from</span> <span class="number">10.1</span><span class="number">.1</span><span class="number">.3</span>: Destination Host Unreachable</span><br><span class="line">^C</span><br><span class="line">--- <span class="number">10.1</span><span class="number">.1</span><span class="number">.3</span> ping statistics ---</span><br><span class="line"><span class="number">2</span> packets transmitted, <span class="number">0</span> packets received, <span class="number">100.00</span>% packet loss</span><br><span class="line"></span><br><span class="line">N3548<span class="number">-1</span><span class="comment"># sh ip arp | i 10.1.213.3</span></span><br><span class="line"><span class="number">10.1</span><span class="number">.1</span><span class="number">.3</span>      <span class="number">00</span>:<span class="number">00</span>:<span class="number">08</span>  INCOMPLETE      Vlan101	&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt; INCOMPLETE</span><br></pre></td></tr></table></figure>
-
-<p>2/ ping的时候在3548-1和3548-2上同时ethanalyzer arp，3548-1说自己发了arp request，3548-2却说自己没收到arp request</p>
-<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="string">N3548-1#</span> <span class="string">ethanalyzer</span> <span class="string">local</span> <span class="string">interface</span> <span class="string">inband</span> <span class="string">display-filter</span> <span class="string">arp</span> <span class="string">limit-captured-frames</span> <span class="number">0</span></span><br><span class="line"></span><br><span class="line"><span class="string">Capturing</span> <span class="string">on</span> <span class="string">inband</span></span><br><span class="line"><span class="attr">wireshark-cisco-mtc-dissector:</span> <span class="string">ethertype=0xde09,</span> <span class="string">devicetype=0x0</span></span><br><span class="line"></span><br><span class="line"><span class="number">2020</span><span class="number">-04</span><span class="number">-28</span> <span class="number">09</span><span class="string">:55:54.350286</span> <span class="string">7c:21:0e:2c:75:fc</span> <span class="string">-&gt;</span> <span class="string">ff:ff:ff:ff:ff:ff</span> <span class="string">ARP</span> <span class="string">Who</span> <span class="string">has</span> <span class="number">10.1</span><span class="number">.1</span><span class="number">.3</span><span class="string">?</span>  <span class="string">Tell</span> <span class="number">10.1</span><span class="number">.1</span><span class="number">.2</span></span><br><span class="line"><span class="number">2020</span><span class="number">-04</span><span class="number">-28</span> <span class="number">09</span><span class="string">:55:58.356976</span> <span class="string">7c:21:0e:2c:75:fc</span> <span class="string">-&gt;</span> <span class="string">ff:ff:ff:ff:ff:ff</span> <span class="string">ARP</span> <span class="string">Who</span> <span class="string">has</span> <span class="number">10.1</span><span class="number">.1</span><span class="number">.3</span><span class="string">?</span>  <span class="string">Tell</span> <span class="number">10.1</span><span class="number">.1</span><span class="number">.2</span></span><br></pre></td></tr></table></figure>
-
-<p>3/ 在3548-2上清copp计数，随后在发起N35-1发起ping的时候，观察copp counter，发现只要N35-1 ping了几个包，N35-2 copp arp queue就显示丢几个包</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">N3548<span class="number">-1</span>共ping了<span class="number">3</span>个包后</span><br><span class="line"></span><br><span class="line">N3548<span class="number">-2</span><span class="comment"># show policy-map interface control-plane | i arp next 5</span></span><br><span class="line">    <span class="class"><span class="keyword">class</span>-<span class="title">map</span> <span class="title">copp</span>-<span class="title">s</span>-<span class="title">arp</span> <span class="params">(match-any)</span></span></span><br><span class="line"><span class="class">      <span class="title">police</span> <span class="title">pps</span> 200 </span></span><br><span class="line"><span class="class">        <span class="title">HW</span> <span class="title">Matched</span> <span class="title">Packets</span>    9</span></span><br><span class="line"><span class="class">        <span class="title">SW</span> <span class="title">Matched</span> <span class="title">Packets</span>    6			&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt; <span class="title">HW</span>表示硬件接口实际收到了多少包，<span class="title">SW</span>表示实际多少包上到上层<span class="title">arp</span>进程去处理，如果二者相等表示<span class="title">COPP</span>无丢包，如果二者不等，说明包被<span class="title">COPP</span>丢了，这里表明丢了3个包，正好和我们丢的3个<span class="title">ping</span>包能对上</span></span><br><span class="line"><span class="class">    <span class="title">class</span>-<span class="title">map</span> <span class="title">copp</span>-<span class="title">s</span>-<span class="title">ptp</span> <span class="params">(match-any)</span></span></span><br><span class="line"><span class="class">      <span class="title">police</span> <span class="title">pps</span> 1000 </span></span><br><span class="line"><span class="class"></span></span><br><span class="line"><span class="class"><span class="title">N3548</span>-1共<span class="title">ping</span>了4个包后</span></span><br><span class="line"><span class="class"></span></span><br><span class="line"><span class="class"><span class="title">N3548</span>-2# <span class="title">show</span> <span class="title">policy</span>-<span class="title">map</span> <span class="title">interface</span> <span class="title">control</span>-<span class="title">plane</span> | <span class="title">i</span> <span class="title">arp</span> <span class="title">next</span> 5</span></span><br><span class="line"><span class="class">    <span class="title">class</span>-<span class="title">map</span> <span class="title">copp</span>-<span class="title">s</span>-<span class="title">arp</span> <span class="params">(match-any)</span></span></span><br><span class="line"><span class="class">      <span class="title">police</span> <span class="title">pps</span> 200 </span></span><br><span class="line"><span class="class">        <span class="title">HW</span> <span class="title">Matched</span> <span class="title">Packets</span>    10</span></span><br><span class="line"><span class="class">        <span class="title">SW</span> <span class="title">Matched</span> <span class="title">Packets</span>    6			&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt; 这里表面丢了4个包，正好和我们丢的4个<span class="title">ping</span>包能对上</span></span><br><span class="line"><span class="class">    <span class="title">class</span>-<span class="title">map</span> <span class="title">copp</span>-<span class="title">s</span>-<span class="title">ptp</span> <span class="params">(match-any)</span></span></span><br><span class="line"><span class="class">      <span class="title">police</span> <span class="title">pps</span> 1000</span></span><br></pre></td></tr></table></figure>
-
-<p>通过这一步明显看出包都丢在copp上了，但诡异的地方也在这里，上述输出可以看到copp为arp设置的阈值是200pps，理论上说N3548-2 CPU收到的arp速率得在200pps以上才会触发copp丢包才对，所以此处是个疑点，先mark</p>
-<p>4/ 继续查看3548-2的syslog，发现过去两周内有一些接口flapping的log，这种flap有可能是trigger，但客户反馈不清楚故障发生的准确时间，所以也先mark</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">We can see e1/<span class="number">27</span>(unused port) staus change two week ago</span><br><span class="line"></span><br><span class="line"><span class="number">2020</span> Apr <span class="number">14</span> <span class="number">09</span>:<span class="number">38</span>:<span class="number">46</span> N3548<span class="number">-2</span> %ETHPORT<span class="number">-5</span>-IF_HARDWARE: Interface Ethernet1/<span class="number">27</span>, hardware type changed to <span class="number">1</span>G</span><br><span class="line"><span class="number">2020</span> Apr <span class="number">14</span> <span class="number">09</span>:<span class="number">38</span>:<span class="number">55</span> N3548<span class="number">-2</span> %ETHPORT<span class="number">-5</span>-IF_HARDWARE: Interface Ethernet1/<span class="number">27</span>, hardware type changed to No-Transceiver</span><br><span class="line"><span class="number">2020</span> Apr <span class="number">14</span> <span class="number">09</span>:<span class="number">38</span>:<span class="number">56</span> N3548<span class="number">-2</span> %ETHPORT<span class="number">-5</span>-IF_DOWN_NONE: Interface Ethernet1/<span class="number">27</span> <span class="keyword">is</span> down (<span class="literal">None</span>)</span><br><span class="line"><span class="number">2020</span> Apr <span class="number">14</span> <span class="number">09</span>:<span class="number">40</span>:<span class="number">25</span> N3548<span class="number">-2</span> %VSHD<span class="number">-5</span>-VSHD_SYSLOG_CONFIG_I: Configured <span class="keyword">from</span> vty by admin on console0</span><br><span class="line"><span class="number">2020</span> Apr <span class="number">14</span> <span class="number">10</span>:<span class="number">14</span>:<span class="number">51</span> N3548<span class="number">-2</span> last message repeated <span class="number">1</span> time</span><br></pre></td></tr></table></figure>
-
-<p>5/ 最后结合这些现象，hsrp双活以及arp无法解析的问题命中bug CSCvs97553 ARP/HSRP Cannot be punt to CPU after some link state change</p>
-<p>bug症状与触发条件如下<br>In warp/normal mode, if the interface has some changes such as shutdown or unplugging the optical module,the remaining Layer 2 interfaces will fail to send ARP/HSRP packets to the CPU, whether unicast ARP or broadcast ARP.</p>
-<p>Only 7.3(3)I7(6) and later will hit this issue</p>
-<p>bug链接<br><a href="https://bst.cloudapps.cisco.com/bugsearch/bug/CSCvs97553" target="_blank" rel="noopener">https://bst.cloudapps.cisco.com/bugsearch/bug/CSCvs97553</a></p>
-<h3 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h3><p>3548升级到修复版本I7(8)或者9.3(4)规避该bug</p>
-<p>最后，客户反馈升级到I78后，故障解决，完结撒花。</p>
+<p>随后leaf002</p>
+<p>客户做vPC切换(shut leaf01a peer-link)后，ssp下游的主机ping远端8.8完全不通</p>
+<p>分析：</p>
+<p>1/ 查这个故障时，故障状态下从ping源开始逐跳ELAM + show forwarding route xxx vrf xxx + show lldp neighbor确认实际转发路径，发现icmp request流量在leaf01a e1/49和ssp01a e1/9互联的链路上打环</p>
+<p>2/ 切换前leaf01a的RIB入下，去往8.8的路由为本地配置的静态路由，递归到vlan1350 am直连出口</p>
+<p>t11int-leaf01a(config-if-range)# sh ip route 8.8.8.8 vrf test<br>IP Route Table for VRF “l3testing”<br>‘<em>‘ denotes best ucast next-hop<br>‘*</em>‘ denotes best mcast next-hop<br>‘[x/y]’ denotes [preference/metric]<br>‘%<string>‘ in via output denotes VRF <string></p>
+<p>0.0.0.0/0, ubest/mbest: 1/0<br>    *via 172.xx.xx.103, [1/0], 00:02:09, static</p>
+<p>t11int-leaf01a(config-if-range)# sh ip route 172.xx.xx.103 vrf test<br>IP Route Table for VRF “l3testing”<br>‘<em>‘ denotes best ucast next-hop<br>‘*</em>‘ denotes best mcast next-hop<br>‘[x/y]’ denotes [preference/metric]<br>‘%<string>‘ in via output denotes VRF <string></p>
+<p>172.xx.xx.103/32, ubest/mbest: 1/0, attached<br>    *via 172.xx.xx.103, Vlan1350, [250/0], 00:02:17, am                 &lt;&lt;&lt; oif is vlan1350</p>
+<p>3/ shut peer-link后，由于keep-alive没动依然是up，leaf01a作为vPC secondary，将自己的vPC member port和SVI如SVI1350口状态置位suspend down</p>
+<p>此时看下leaf01a的RIB，发现缺省路由依然是up的，up的原因也很简单，配置的静态路由只关联了下一跳，只要该下一跳地址我路由可达，就可以让静态路由up</p>
+<p>IP Route Table for VRF “test”<br>‘<em>‘ denotes best ucast next-hop<br>‘*</em>‘ denotes best mcast next-hop<br>‘[x/y]’ denotes [preference/metric]<br>‘%<string>‘ in via output denotes VRF <string></p>
+<p>0.0.0.0/0, ubest/mbest: 1/0<br>    *via 172.xx.xx.103, [1/0], 00:37:19, static</p>
+<p>leaf01a(config)# sh ip route 172.xx.xx.103 vrf test<br>IP Route Table for VRF “test”<br>‘<em>‘ denotes best ucast next-hop<br>‘*</em>‘ denotes best mcast next-hop<br>‘[x/y]’ denotes [preference/metric]<br>‘%<string>‘ in via output denotes VRF <string></p>
+<p>172.xx.x.96/28, ubest/mbest: 1/0<br>    *via 172.xx.xx.54, [200/0], 00:34:36, bgp-64603, internal, tag 64603</p>
+<p>leaf01a(config)# sh ip route 172.xx.xx.54 vrf l3testing<br>IP Route Table for VRF “l3testing”<br>‘<em>‘ denotes best ucast next-hop<br>‘*</em>‘ denotes best mcast next-hop<br>‘[x/y]’ denotes [preference/metric]<br>‘%<string>‘ in via output denotes VRF <string></p>
+<p>172.xx.xx.54/32, ubest/mbest: 2/0<br>    *via 172.xx.40.1, Eth1/49, [115/3], 3d22h, isis-10, L1    &lt;&lt;&lt; 去往8.8的包可能从e1/49发出<br>    *via 172.xx.40.2, Eth1/50, [115/3], 3d22h, isis-10, L1</p>
+<p>对0.0/32下一跳地址查路由，可以看到递归到最后是172.xx.xx.54/32(leaf02a loopback)的isis ecmp路由,两个出口分别是40.1(leaf01a连接ssp01a的接口)，40.2(leaf01a连接ssp01a的接口)</p>
+<p>所以现在配置的默认路由依然能up是因为默认路由关联的下一跳是可达的，于是这条静态默认路由也会被重分布到bgp中</p>
+<p>再来看spine ssp01a的RIB，去往8.8的路由是一条bgp 0.0路由，0.0路由就是分别从leaf01a和leaf02a重分布得到的，由选路规则leaf01a RouterID更小，所以优选leaf01a学来的路由</p>
+<p>IP Route Table for VRF “test”<br>‘<em>‘ denotes best ucast next-hop<br>‘*</em>‘ denotes best mcast next-hop<br>‘[x/y]’ denotes [preference/metric]<br>‘%<string>‘ in via output denotes VRF <string></p>
+<p>0.0.0.0/0, ubest/mbest: 1/0<br>    *via 172.x.xx.53, [200/0], 3d22h, bgp-64603, internal, tag 64603</p>
+<p>对下一条递归下，最终走的是e1/9</p>
+<p>t11cbb-ssp01a# sh ip route 172.24.40.53 vrf test<br>IP Route Table for VRF “l3testing”<br>‘<em>‘ denotes best ucast next-hop<br>‘*</em>‘ denotes best mcast next-hop<br>‘[x/y]’ denotes [preference/metric]<br>‘%<string>‘ in via output denotes VRF <string></p>
+<p>172.x.x.53/32, ubest/mbest: 1/0<br>    *via 172.xx.xx.53, Eth1/9, [115/2], 3d22h, isis-10, L1<br>     via 172.xx.xx.53, Eth1/9, [250/0], 3d22h, am</p>
+<p>所以从leaf01a和ssp01a的路由表就能看到数据包在这条直连链路打环</p>
+<h3 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h3><p>leaf01a和leaf02a的静态路由0.0/0写的时候带上出接口VLAN1350，这样在peer-link down，使得leaf01a VLAN1350 suspend down后，leaf01a静态路由0.0/0直接自动失效，leaf01a 重分布0.0/0的动作也失效，这样ssp01a仅会收到从leaf02a重分布过来的0.0/0路由，并且指向leaf02a</p>
+<p>vrf context test<br>  ip route 0.0.0.0/0 Vlan1350 172.xx.xx.103</p>
 
       
     </div>
@@ -379,12 +389,6 @@
 
     <footer class="post-footer">
       
-        <div class="post-tags">
-          
-            <a href="/tags/arp/" rel="tag"># arp</a>
-          
-        </div>
-      
 
       
       
@@ -394,8 +398,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2020/05/10/unable-to-get-address-from-dhcp-on-I77/" rel="next" title="N9K I77下client无法通过dhcp获取地址">
-                <i class="fa fa-chevron-left"></i> N9K I77下client无法通过dhcp获取地址
+              <a href="/2020/05/11/ospf-stuck-in-exstart/" rel="next" title="MTU问题导致ospf卡在EXSTART状态">
+                <i class="fa fa-chevron-left"></i> MTU问题导致ospf卡在EXSTART状态
               </a>
             
           </div>
@@ -403,10 +407,6 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2020/05/10/copp/" rel="prev" title="mtu-failure copp计数问题">
-                mtu-failure copp计数问题 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -529,7 +529,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#故障描述"><span class="nav-number">1.</span> <span class="nav-text">故障描述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#分析"><span class="nav-number">2.</span> <span class="nav-text">分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#解决方法"><span class="nav-number">3.</span> <span class="nav-text">解决方法</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#故障描述"><span class="nav-number">1.</span> <span class="nav-text">故障描述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#解决方法"><span class="nav-number">2.</span> <span class="nav-text">解决方法</span></a></li></ol></div>
             
 
           </div>

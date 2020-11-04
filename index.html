@@ -263,6 +263,164 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/10/31/%E8%AE%B0%E4%B8%80%E4%B8%AA%E9%9D%99%E6%80%81%E8%B7%AF%E7%94%B1%E5%BC%95%E8%B5%B7%E7%9A%84%E7%8E%AF%E8%B7%AF%E9%97%AE%E9%A2%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="cfc">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="fucchen.dc">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/10/31/%E8%AE%B0%E4%B8%80%E4%B8%AA%E9%9D%99%E6%80%81%E8%B7%AF%E7%94%B1%E5%BC%95%E8%B5%B7%E7%9A%84%E7%8E%AF%E8%B7%AF%E9%97%AE%E9%A2%98/" itemprop="url">一个静态路由引起的环路问题</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-10-31T11:48:27+08:00">
+                2020-10-31
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h3 id="故障描述"><a href="#故障描述" class="headerlink" title="故障描述"></a>故障描述</h3><p>拓扑</p>
+<p><img src="/images/isis-bgp-loop.png" alt="isis-bgp-loop topo"></p>
+<p>先介绍下大体背景</p>
+<p>VxLAN环境，ssp01a和ssp01b为spine并是RR, leaf01a和leaf02a为leaf，并跑vPC，leaf01a为vPC secondary</p>
+<p>两台leaf上配置了出口静态缺省路由(红色箭头，两台leaf通过0.0/32去往8.8)静态路由关联的是接口VLAN1350，如下:</p>
+<p>vrf context test<br>  ip route 0.0.0.0/0 172.x.x.103    // 172.x.x.103印象是VLAN1350所在直连网段的一个NH</p>
+<p>随后leaf上两个动作</p>
+<ul>
+<li>将静态路由0.0/0通告到bgp evpn中</li>
+<li>将直连路由vlan1350通告到bgp evpn中</li>
+</ul>
+<p>随后leaf002</p>
+<p>客户做vPC切换(shut leaf01a peer-link)后，ssp下游的主机ping远端8.8完全不通</p>
+<p>分析：</p>
+<p>1/ 查这个故障时，故障状态下从ping源开始逐跳ELAM + show forwarding route xxx vrf xxx + show lldp neighbor确认实际转发路径，发现icmp request流量在leaf01a e1/49和ssp01a e1/9互联的链路上打环</p>
+<p>2/ 切换前leaf01a的RIB入下，去往8.8的路由为本地配置的静态路由，递归到vlan1350 am直连出口</p>
+<p>t11int-leaf01a(config-if-range)# sh ip route 8.8.8.8 vrf test<br>IP Route Table for VRF “l3testing”<br>‘<em>‘ denotes best ucast next-hop<br>‘*</em>‘ denotes best mcast next-hop<br>‘[x/y]’ denotes [preference/metric]<br>‘%<string>‘ in via output denotes VRF <string></p>
+<p>0.0.0.0/0, ubest/mbest: 1/0<br>    *via 172.xx.xx.103, [1/0], 00:02:09, static</p>
+<p>t11int-leaf01a(config-if-range)# sh ip route 172.xx.xx.103 vrf test<br>IP Route Table for VRF “l3testing”<br>‘<em>‘ denotes best ucast next-hop<br>‘*</em>‘ denotes best mcast next-hop<br>‘[x/y]’ denotes [preference/metric]<br>‘%<string>‘ in via output denotes VRF <string></p>
+<p>172.xx.xx.103/32, ubest/mbest: 1/0, attached<br>    *via 172.xx.xx.103, Vlan1350, [250/0], 00:02:17, am                 &lt;&lt;&lt; oif is vlan1350</p>
+<p>3/ shut peer-link后，由于keep-alive没动依然是up，leaf01a作为vPC secondary，将自己的vPC member port和SVI如SVI1350口状态置位suspend down</p>
+<p>此时看下leaf01a的RIB，发现缺省路由依然是up的，up的原因也很简单，配置的静态路由只关联了下一跳，只要该下一跳地址我路由可达，就可以让静态路由up</p>
+<p>IP Route Table for VRF “test”<br>‘<em>‘ denotes best ucast next-hop<br>‘*</em>‘ denotes best mcast next-hop<br>‘[x/y]’ denotes [preference/metric]<br>‘%<string>‘ in via output denotes VRF <string></p>
+<p>0.0.0.0/0, ubest/mbest: 1/0<br>    *via 172.xx.xx.103, [1/0], 00:37:19, static</p>
+<p>leaf01a(config)# sh ip route 172.xx.xx.103 vrf test<br>IP Route Table for VRF “test”<br>‘<em>‘ denotes best ucast next-hop<br>‘*</em>‘ denotes best mcast next-hop<br>‘[x/y]’ denotes [preference/metric]<br>‘%<string>‘ in via output denotes VRF <string></p>
+<p>172.xx.x.96/28, ubest/mbest: 1/0<br>    *via 172.xx.xx.54, [200/0], 00:34:36, bgp-64603, internal, tag 64603</p>
+<p>leaf01a(config)# sh ip route 172.xx.xx.54 vrf l3testing<br>IP Route Table for VRF “l3testing”<br>‘<em>‘ denotes best ucast next-hop<br>‘*</em>‘ denotes best mcast next-hop<br>‘[x/y]’ denotes [preference/metric]<br>‘%<string>‘ in via output denotes VRF <string></p>
+<p>172.xx.xx.54/32, ubest/mbest: 2/0<br>    *via 172.xx.40.1, Eth1/49, [115/3], 3d22h, isis-10, L1    &lt;&lt;&lt; 去往8.8的包可能从e1/49发出<br>    *via 172.xx.40.2, Eth1/50, [115/3], 3d22h, isis-10, L1</p>
+<p>对0.0/32下一跳地址查路由，可以看到递归到最后是172.xx.xx.54/32(leaf02a loopback)的isis ecmp路由,两个出口分别是40.1(leaf01a连接ssp01a的接口)，40.2(leaf01a连接ssp01a的接口)</p>
+<p>所以现在配置的默认路由依然能up是因为默认路由关联的下一跳是可达的，于是这条静态默认路由也会被重分布到bgp中</p>
+<p>再来看spine ssp01a的RIB，去往8.8的路由是一条bgp 0.0路由，0.0路由就是分别从leaf01a和leaf02a重分布得到的，由选路规则leaf01a RouterID更小，所以优选leaf01a学来的路由</p>
+<p>IP Route Table for VRF “test”<br>‘<em>‘ denotes best ucast next-hop<br>‘*</em>‘ denotes best mcast next-hop<br>‘[x/y]’ denotes [preference/metric]<br>‘%<string>‘ in via output denotes VRF <string></p>
+<p>0.0.0.0/0, ubest/mbest: 1/0<br>    *via 172.x.xx.53, [200/0], 3d22h, bgp-64603, internal, tag 64603</p>
+<p>对下一条递归下，最终走的是e1/9</p>
+<p>t11cbb-ssp01a# sh ip route 172.24.40.53 vrf test<br>IP Route Table for VRF “l3testing”<br>‘<em>‘ denotes best ucast next-hop<br>‘*</em>‘ denotes best mcast next-hop<br>‘[x/y]’ denotes [preference/metric]<br>‘%<string>‘ in via output denotes VRF <string></p>
+<p>172.x.x.53/32, ubest/mbest: 1/0<br>    *via 172.xx.xx.53, Eth1/9, [115/2], 3d22h, isis-10, L1<br>     via 172.xx.xx.53, Eth1/9, [250/0], 3d22h, am</p>
+<p>所以从leaf01a和ssp01a的路由表就能看到数据包在这条直连链路打环</p>
+<h3 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h3><p>leaf01a和leaf02a的静态路由0.0/0写的时候带上出接口VLAN1350，这样在peer-link down，使得leaf01a VLAN1350 suspend down后，leaf01a静态路由0.0/0直接自动失效，leaf01a 重分布0.0/0的动作也失效，这样ssp01a仅会收到从leaf02a重分布过来的0.0/0路由，并且指向leaf02a</p>
+<p>vrf context test<br>  ip route 0.0.0.0/0 Vlan1350 172.xx.xx.103</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/05/11/ospf-stuck-in-exstart/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1537,153 +1695,13 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/05/09/bgp-flapping-every-3-mins/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="cfc">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="fucchen.dc">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2020/05/09/bgp-flapping-every-3-mins/" itemprop="url">bgp flapping every 3 mins</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-05-09T22:37:44+08:00">
-                2020-05-09
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h3 id="故障描述"><a href="#故障描述" class="headerlink" title="故障描述"></a>故障描述</h3><p>拓扑</p>
-<p><img src="/images/bgp-1-1.png" alt=""></p>
-<p>1/ N9K-1与N9K-2直连，物理口L2，两端用loopback0(11.11/32与22.22/32)建IBGP邻居，两端loopback互相访问的出口是SVI10与e1/1</p>
-<p>2/ 两端SVI10 MTU 9216, 两端e1/1 MTU 1500</p>
-<p>3/ bgp每隔3分钟flap一次，log显示down的原因是holdtimer expire</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="number">2020</span> Apr <span class="number">20</span> <span class="number">18</span>:<span class="number">31</span>:<span class="number">02</span> switch %BGP<span class="number">-5</span>-ADJCHANGE:  bgp- [<span class="number">23416</span>] (default) neighbor <span class="number">22.22</span><span class="number">.22</span><span class="number">.22</span> Down - sent:  holdtimer expired error</span><br><span class="line"><span class="number">2020</span> Apr <span class="number">20</span> <span class="number">18</span>:<span class="number">31</span>:<span class="number">13</span> switch %BGP<span class="number">-5</span>-ADJCHANGE:  bgp- [<span class="number">23416</span>] (default) neighbor <span class="number">22.22</span><span class="number">.22</span><span class="number">.22</span> Up </span><br><span class="line"><span class="number">2020</span> Apr <span class="number">20</span> <span class="number">18</span>:<span class="number">34</span>:<span class="number">13</span> switch %BGP<span class="number">-5</span>-ADJCHANGE:  bgp- [<span class="number">23416</span>] (default) neighbor <span class="number">22.22</span><span class="number">.22</span><span class="number">.22</span> Down - sent:  holdtimer expired error</span><br><span class="line"><span class="number">2020</span> Apr <span class="number">20</span> <span class="number">18</span>:<span class="number">34</span>:<span class="number">24</span> switch %BGP<span class="number">-5</span>-ADJCHANGE:  bgp- [<span class="number">23416</span>] (default) neighbor <span class="number">22.22</span><span class="number">.22</span><span class="number">.22</span> Up </span><br><span class="line"><span class="number">2020</span> Apr <span class="number">20</span> <span class="number">18</span>:<span class="number">37</span>:<span class="number">24</span> switch %BGP<span class="number">-5</span>-ADJCHANGE:  bgp- [<span class="number">23416</span>] (default) neighbor <span class="number">22.22</span><span class="number">.22</span><span class="number">.22</span> Down - sent:  holdtimer expired error</span><br></pre></td></tr></table></figure>
-
-<h3 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h3><p>在N9K-1上ethanalyzer抓包如下</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="number">93180</span><span class="number">-1</span>(config-<span class="keyword">if</span>)<span class="comment"># ethanalyzer local interface inband display-filter "ip.addr==11.11.11.11" limit-captured-frames 0</span></span><br><span class="line"></span><br><span class="line">Capturing on inband</span><br><span class="line">2020-04-21 14:37:46.113886  22.22.22.22 -&gt; 11.11.11.11  BGP NOTIFICATION Message</span><br><span class="line">2020-04-21 14:37:46.113932  11.11.11.11 -&gt; 22.22.22.22  TCP 27237 &gt; bgp [ACK] Seq=2646 Ack=22 Win=4588 Len=0 TSV=6362322 TSER=6515652</span><br><span class="line">2020-04-21 14:37:51.120379  22.22.22.22 -&gt; 11.11.11.11  TCP bgp &gt; 27237 [FIN, ACK] Seq=22 Ack=1 Win=4582 Len=0 TSV=6517154 TSER=6308321</span><br><span class="line">2020-04-21 14:37:51.121086  11.11.11.11 -&gt; 22.22.22.22  BGP KEEPALIVE Message, KEEPALIVE Message</span><br><span class="line">2020-04-21 14:37:51.121201  22.22.22.22 -&gt; 11.11.11.11  TCP bgp &gt; 27237 [RST] Seq=23 Win=0 Len=0</span><br><span class="line">2020-04-21 14:37:57.001783  11.11.11.11 -&gt; 22.22.22.22  TCP 31606 &gt; bgp [SYN] Seq=0 Win=18352 Len=0 MSS=9176 TSV=6365589 TSER=0 WS=2</span><br><span class="line">&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;  TCP三次握手协商出MSS <span class="number">9176</span></span><br><span class="line"></span><br><span class="line">2020-04-21 14:37:57.001910  22.22.22.22 -&gt; 11.11.11.11  TCP bgp &gt; 31606 [SYN, ACK] Seq=0 Ack=1 Win=18328 Len=0 MSS=9176 TSV=6518918 TSER=6365589 WS=2</span><br><span class="line">2020-04-21 14:37:57.001968  11.11.11.11 -&gt; 22.22.22.22  TCP 31606 &gt; bgp [ACK] Seq=1 Ack=1 Win=18352 Len=0 TSV=6365589 TSER=6518918</span><br><span class="line">2020-04-21 14:37:57.002650  22.22.22.22 -&gt; 11.11.11.11  BGP OPEN Message</span><br><span class="line">2020-04-21 14:37:57.002687  11.11.11.11 -&gt; 22.22.22.22  TCP 31606 &gt; bgp [ACK] Seq=1 Ack=71 Win=18352 Len=0 TSV=6365589 TSER=6518918</span><br><span class="line">2020-04-21 14:37:57.137256  11.11.11.11 -&gt; 22.22.22.22  BGP OPEN Message</span><br><span class="line">2020-04-21 14:37:57.137362  22.22.22.22 -&gt; 11.11.11.11  TCP bgp &gt; 31606 [ACK] Seq=71 Ack=71 Win=18328 Len=0 TSV=6518959 TSER=6365629</span><br><span class="line">2020-04-21 14:37:57.138112  11.11.11.11 -&gt; 22.22.22.22  BGP KEEPALIVE Message</span><br><span class="line">2020-04-21 14:37:57.138180  22.22.22.22 -&gt; 11.11.11.11  TCP bgp &gt; 31606 [ACK] Seq=71 Ack=90 Win=18328 Len=0 TSV=6518959 TSER=6365630</span><br><span class="line">2020-04-21 14:37:57.150782  22.22.22.22 -&gt; 11.11.11.11  BGP KEEPALIVE Message</span><br><span class="line">2020-04-21 14:37:57.150812  11.11.11.11 -&gt; 22.22.22.22  TCP 31606 &gt; bgp [ACK] Seq=90 Ack=90 Win=18352 Len=0 TSV=6365634 TSER=6518963</span><br><span class="line">2020-04-21 14:37:58.152430  11.11.11.11 -&gt; 22.22.22.22  BGP UPDATE Message, UPDATE Message, KEEPALIVE Message</span><br><span class="line">&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;  向外发大于<span class="number">1500</span>B的update                               </span><br><span class="line"></span><br><span class="line">2020-04-21 14:37:58.157457  22.22.22.22 -&gt; 11.11.11.11  BGP UPDATE Message, UPDATE Message, KEEPALIVE Message</span><br><span class="line">2020-04-21 14:37:58.157505  11.11.11.11 -&gt; 22.22.22.22  TCP 31606 &gt; bgp [ACK] Seq=2735 Ack=198 Win=18352 Len=0 TSV=6365936 TSER=6519265</span><br><span class="line">2020-04-21 14:37:58.354040  11.11.11.11 -&gt; 22.22.22.22  BGP [TCP Retransmission] UPDATE Message, UPDATE Message, KEEPALIVE Message   </span><br><span class="line">&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;  大于<span class="number">1500</span>B的update大于对端物理口MTU，被视为jumbo直接丢弃，对面不回ACK，本端收不到ACK，不断重传</span><br><span class="line"></span><br><span class="line">2020-04-21 14:37:58.760702  11.11.11.11 -&gt; 22.22.22.22  BGP [TCP Retransmission] UPDATE Message, UPDATE Message, KEEPALIVE Message</span><br><span class="line">2020-04-21 14:37:59.574032  11.11.11.11 -&gt; 22.22.22.22  BGP [TCP Retransmission] UPDATE Message, UPDATE Message, KEEPALIVE Message</span><br><span class="line">2020-04-21 14:38:01.204036  11.11.11.11 -&gt; 22.22.22.22  BGP [TCP Retransmission] UPDATE Message, UPDATE Message, KEEPALIVE Message</span><br><span class="line">2020-04-21 14:38:04.464031  11.11.11.11 -&gt; 22.22.22.22  BGP [TCP Retransmission] UPDATE Message, UPDATE Message, KEEPALIVE Message</span><br><span class="line">2020-04-21 14:38:10.984024  11.11.11.11 -&gt; 22.22.22.22  BGP [TCP Retransmission] UPDATE Message, UPDATE Message, KEEPALIVE Message</span><br><span class="line">2020-04-21 14:38:24.024033  11.11.11.11 -&gt; 22.22.22.22  BGP [TCP Retransmission] UPDATE Message, UPDATE Message, KEEPALIVE Message</span><br><span class="line">2020-04-21 14:38:50.104020  11.11.11.11 -&gt; 22.22.22.22  BGP [TCP Retransmission] UPDATE Message, UPDATE Message, KEEPALIVE Message</span><br><span class="line">2020-04-21 14:38:58.163131  22.22.22.22 -&gt; 11.11.11.11  BGP KEEPALIVE Message</span><br><span class="line">2020-04-21 14:38:58.163193  11.11.11.11 -&gt; 22.22.22.22  TCP 31606 &gt; bgp [ACK] Seq=2735 Ack=217 Win=18352 Len=0 TSV=6383937 TSER=6537267</span><br><span class="line">2020-04-21 14:39:42.317356  11.11.11.11 -&gt; 22.22.22.22  BGP [TCP Retransmission] UPDATE Message, UPDATE Message, KEEPALIVE Message</span><br><span class="line">2020-04-21 14:39:58.169396  22.22.22.22 -&gt; 11.11.11.11  BGP KEEPALIVE Message</span><br><span class="line">2020-04-21 14:39:58.169458  11.11.11.11 -&gt; 22.22.22.22  TCP 31606 &gt; bgp [ACK] Seq=2735 Ack=236 Win=18352 Len=0 TSV=6401939 TSER=6555269</span><br><span class="line">2020-04-21 14:40:57.155907  22.22.22.22 -&gt; 11.11.11.11  BGP NOTIFICATION Message                                                                                                                                                                                  </span><br><span class="line">2020-04-21 14:40:57.155955  11.11.11.11 -&gt; 22.22.22.22  TCP 31606 &gt; bgp [ACK] Seq=2735 Ack=257 Win=18352 Len=0 TSV=6419635 TSER=6572965</span><br><span class="line">2020-04-21 14:41:02.161130  11.11.11.11 -&gt; 22.22.22.22  BGP KEEPALIVE Message, KEEPALIVE Message</span><br><span class="line">2020-04-21 14:41:02.161252  22.22.22.22 -&gt; 11.11.11.11  TCP [TCP Dup ACK 5137#1] bgp &gt; 31606 [ACK] Seq=257 Ack=90 Win=18328 Len=0 TSV=6574466 TSER=6365634 SLE=2735 SRE=2774</span><br><span class="line">2020-04-21 14:41:02.162420  22.22.22.22 -&gt; 11.11.11.11  TCP bgp &gt; 31606 [FIN, ACK] Seq=257 Ack=90 Win=18328 Len=0 TSV=6574467 TSER=6365634 SLE=2735 SRE=2774</span><br><span class="line">2020-04-21 14:41:02.162451  11.11.11.11 -&gt; 22.22.22.22  TCP 31606 &gt; bgp [ACK] Seq=2774 Ack=258 Win=18352 Len=0 TSV=6421137 TSER=6574467</span><br></pre></td></tr></table></figure>
-
-<p>要点</p>
-<p>1/ 在BGP邻居建立前的进行TCP三次握手中，可以看到MSS协商成了9176</p>
-<p>2/ BGP建邻居用的Open报文都是小包(size &lt; 1500)正常收发，bgp邻居正常建立</p>
-<p>3/ bgp邻居建立后，下一步是通告bgp update，bgp Update报文size上限由TCP MSS决定，所以此处BGP Update size最大可以达到9176，<br>bgp通告路由时会将多个NLRI路由信息裹在一个Update报文里，所以当邻居up后，需要通告的路由较多时，很容易出现Update size &gt; 1500 的情况出现，bgp Update size &gt; 物理口e1/1的MTU 1500，所以N9K-1将该包记output error &amp; jumbo将包从e1/1发出，N9K-2收到包记input error &amp; jumbo，并在接口层面丢弃该报文，所以上层tcp &amp; bgp实际上并没有收到这个tcp based update，自然也不会回复ack，所以我们看到N9K-1由于收不到ack，不断重传</p>
-<p>4/ 仔细观察Update报文部分，会发现keepalive报文也是裹在jumbo frame的bgp update作为同一个传输的，所以keepalive也是被N9K-2直接丢弃的并且没有ack，所以N9K-1在连续三次发出的Keepalive(60s * 3 == 180s/3mins)没有被ack后，触发holdtime expire，邻居被重置，然后一直循环这4个步骤</p>
-<h3 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h3><p>1/沿途涉及的L2/L3接口MTU统一成9216</p>
-<p>2/两端配置pmtud，启用后pmtud协商出较小的MSS值，如下输出协商成了1024，所以后续bgp update不会大于这个size</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="number">93180</span><span class="number">-1</span>(config-<span class="keyword">if</span>)<span class="comment">#  show sockets connection local 11.11.11.11 foreign 22.22.22.22 detail </span></span><br><span class="line"></span><br><span class="line">Total number of netstack tcp sockets: <span class="number">5</span></span><br><span class="line">Active connections (including servers)</span><br><span class="line"></span><br><span class="line">Total number of netstack udp sockets: <span class="number">9</span></span><br><span class="line">Active connections (including servers)</span><br><span class="line"></span><br><span class="line">Total number of netstack raw sockets: <span class="number">0</span></span><br><span class="line"></span><br><span class="line">Kernel Socket Connection:</span><br><span class="line">State      Recv-Q Send-Q        Local Address:Port          Peer Address:Port </span><br><span class="line"></span><br><span class="line">ESTAB      <span class="number">0</span>      <span class="number">0</span>               <span class="number">11.11</span><span class="number">.11</span><span class="number">.11</span>:<span class="number">179</span>            <span class="number">22.22</span><span class="number">.22</span><span class="number">.22</span>:<span class="number">54435</span>  ino:<span class="number">133796</span> sk:ffff8805d0e31a00</span><br><span class="line"></span><br><span class="line">         skmem:(r0,rb262144,t0,tb262144,f0,w0,o0) ts sack cubic wscale:<span class="number">2</span>,<span class="number">2</span> rto:<span class="number">203.333</span> rtt:<span class="number">3.333</span>/<span class="number">1.666</span> ato:<span class="number">40</span> mss:<span class="number">1024</span> cwnd:<span class="number">5</span> ssthresh:<span class="number">7</span> send <span class="number">12.3</span>Mbps rcv_space:<span class="number">18328</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="附LAB复现方法"><a href="#附LAB复现方法" class="headerlink" title="附LAB复现方法"></a>附LAB复现方法</h3><p>LAB找两台N9K用如上拓扑连接，然后在N9K-1上通过脚本创建大量loopback，并将其network到bgp中，通告给N9K-2。复现这个故障最关键地方是需要保证bgp up后，向peer通告的路由数量要足够多，Update size需要大于1500</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">from</span> cli <span class="keyword">import</span> *</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">509</span>):</span><br><span class="line"><span class="meta">... </span>    <span class="keyword">if</span> i &lt;= <span class="number">254</span>:</span><br><span class="line"><span class="meta">... </span>        <span class="keyword">print</span> <span class="string">'conf t ; interface loopback'</span> + str(i) + <span class="string">' ; ip address 1.1.1.'</span> + str(i) + <span class="string">'/32'</span></span><br><span class="line"><span class="meta">... </span>        cli(<span class="string">'conf t ; interface loopback'</span> + str(i) + <span class="string">' ; ip address 1.1.1.'</span> + str(i) + <span class="string">'/32'</span>)</span><br><span class="line"><span class="meta">... </span>    <span class="keyword">else</span>:</span><br><span class="line"><span class="meta">... </span>        <span class="keyword">print</span> <span class="string">'conf t ; interface loopback'</span> + str(i) + <span class="string">' ; ip address 1.1.2.'</span> + str(i<span class="number">-254</span>) + <span class="string">'/32'</span></span><br><span class="line"><span class="meta">... </span>        cli(<span class="string">'conf t ; interface loopback'</span> + str(i) + <span class="string">' ; ip address 1.1.2.'</span> + str(i<span class="number">-254</span>) + <span class="string">'/32'</span>)</span><br><span class="line"><span class="meta">... </span></span><br><span class="line">conf t ; interface loopback0 ; ip address <span class="number">1.1</span><span class="number">.1</span><span class="number">.0</span>/<span class="number">32</span></span><br><span class="line"><span class="string">''</span></span><br><span class="line">conf t ; interface loopback1 ; ip address <span class="number">1.1</span><span class="number">.1</span><span class="number">.1</span>/<span class="number">32</span></span><br><span class="line"><span class="string">''</span></span><br><span class="line">conf t ; interface loopback2 ; ip address <span class="number">1.1</span><span class="number">.1</span><span class="number">.2</span>/<span class="number">32</span></span><br><span class="line"><span class="string">''</span></span><br><span class="line">conf t ; interface loopback3 ; ip address <span class="number">1.1</span><span class="number">.1</span><span class="number">.3</span>/<span class="number">32</span></span><br><span class="line"><span class="string">''</span></span><br><span class="line">conf t ; interface loopback4 ; ip address <span class="number">1.1</span><span class="number">.1</span><span class="number">.4</span>/<span class="number">32</span></span><br><span class="line"><span class="string">''</span></span><br><span class="line">conf t ; interface loopback5 ; ip address <span class="number">1.1</span><span class="number">.1</span><span class="number">.5</span>/<span class="number">32</span></span><br><span class="line"><span class="string">''</span></span><br><span class="line">conf t ; interface loopback6 ; ip address <span class="number">1.1</span><span class="number">.1</span><span class="number">.6</span>/<span class="number">32</span></span><br><span class="line"><span class="string">''</span></span><br><span class="line">conf t ; interface loopback7 ; ip address <span class="number">1.1</span><span class="number">.1</span><span class="number">.7</span>/<span class="number">32</span></span><br><span class="line"><span class="string">''</span></span><br><span class="line">conf t ; interface loopback8 ; ip address <span class="number">1.1</span><span class="number">.1</span><span class="number">.8</span>/<span class="number">32</span></span><br><span class="line"><span class="string">''</span></span><br><span class="line">conf t ; interface loopback9 ; ip address <span class="number">1.1</span><span class="number">.1</span><span class="number">.9</span>/<span class="number">32</span></span><br><span class="line"><span class="string">''</span></span><br><span class="line"></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>quit()</span><br><span class="line"> Redistribute the <span class="number">500</span> loopbacks into BGP to create a large size BGP UPDATE</span><br><span class="line"></span><br><span class="line"> </span><br><span class="line"></span><br><span class="line">ip prefix-list LOCAL-TO-BGP seq <span class="number">5</span> permit <span class="number">1.1</span><span class="number">.1</span><span class="number">.0</span>/<span class="number">24</span> ge <span class="number">25</span> </span><br><span class="line">ip prefix-list LOCAL-TO-BGP seq <span class="number">10</span> permit <span class="number">1.1</span><span class="number">.2</span><span class="number">.0</span>/<span class="number">24</span> ge <span class="number">25</span></span><br><span class="line">!</span><br><span class="line">route-map LOCAL-TO-BGP permit <span class="number">10</span></span><br><span class="line">  match ip address prefix-list LOCAL-TO-BGP </span><br><span class="line">!</span><br><span class="line">router bgp <span class="number">64512</span></span><br><span class="line">  timers bgp <span class="number">3</span> <span class="number">9</span></span><br><span class="line">  address-family ipv4 unicast</span><br><span class="line">    redistribute direct route-map LOCAL-TO-BGP</span><br></pre></td></tr></table></figure>
-
-
-
-
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
+  <nav class="pagination">
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/">&lt;i class&#x3D;&quot;fa fa-angle-right&quot;&gt;&lt;&#x2F;i&gt;</a>
+  </nav>
+
 
 
           </div>
@@ -1727,7 +1745,7 @@
               
                 <a href="/archives/%20%7C%7C%20archive">
               
-                  <span class="site-state-item-count">10</span>
+                  <span class="site-state-item-count">11</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
