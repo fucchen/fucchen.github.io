@@ -323,7 +323,7 @@
   </entry>
   <entry>
     <title>一个静态路由引起的环路问题</title>
-    <url>/2020/10/31/%E8%AE%B0%E4%B8%80%E4%B8%AA%E9%9D%99%E6%80%81%E8%B7%AF%E7%94%B1%E5%BC%95%E8%B5%B7%E7%9A%84%E7%8E%AF%E8%B7%AF%E9%97%AE%E9%A2%98/</url>
+    <url>/2020/11/07/%E8%AE%B0%E4%B8%80%E4%B8%AA%E9%9D%99%E6%80%81%E8%B7%AF%E7%94%B1%E5%BC%95%E8%B5%B7%E7%9A%84%E7%8E%AF%E8%B7%AF%E9%97%AE%E9%A2%98/</url>
     <content><![CDATA[<h3 id="故障描述"><a href="#故障描述" class="headerlink" title="故障描述"></a>故障描述</h3><p>拓扑</p>
 <p><img src="/images/isis-bgp-loop.png" alt="isis-bgp-loop topo"></p>
 <p>先介绍下大体背景</p>
@@ -350,5 +350,43 @@
 <p>所以从leaf01a和ssp01a的路由表就能看到数据包在这条直连链路打环</p>
 <h3 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h3><p>leaf01a和leaf02a的静态路由0.0/0写的时候带上出接口VLAN1350，这样在peer-link down，使得leaf01a VLAN1350 suspend down后，leaf01a静态路由0.0/0直接自动失效，leaf01a 重分布0.0/0的动作也失效，这样ssp01a仅会收到从leaf02a重分布过来的0.0/0路由，并且指向leaf02a</p>
 <figure class="highlight python"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">vrf context test</span><br><span class="line">  ip route <span class="number">0.0</span><span class="number">.0</span><span class="number">.0</span>/<span class="number">0</span> Vlan1350 <span class="number">172.</span>xx.xx<span class="number">.103</span></span><br></pre></td></tr></table></figure>]]></content>
+  </entry>
+  <entry>
+    <title>peer-gateway作用下，eigrp/ospf邻居翻动</title>
+    <url>/2020/11/15/peer-gateway%E4%BD%9C%E7%94%A8%E4%B8%8B%EF%BC%8Ceigrp-ospf%E9%82%BB%E5%B1%85%E7%BF%BB%E5%8A%A8/</url>
+    <content><![CDATA[<p>涉及的IP已改</p>
+<h3 id="故障描述"><a href="#故障描述" class="headerlink" title="故障描述"></a>故障描述</h3><p>拓扑</p>
+<p><img src="/images/peer-router-1-1.png" alt="peer-router-1-1 topo"></p>
+<p>eigrp/ospf都可能遇到这个问题，原理一样，下面以eigrp举例说明</p>
+<p>N9K-1和N9K-2跑vPC，C3900双上联到两台N9K，C3900通过SVI213和N9K-1 SVI213建EIGRP邻居后，邻居持续flapping</p>
+<h3 id="故障分析"><a href="#故障分析" class="headerlink" title="故障分析"></a>故障分析</h3><p>N9K上的vPC配置，其中配置了peer-gateway</p>
+<p>vpc domain 1<br>  peer-switch<br>  peer-keepalive destination 10.1.1.1 source 10.1.1.2 vrf vpcpeerkeepalive<br>  peer-gateway                        &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;<br>  auto-recovery</p>
+<p>分析flap原因，既然是flap，肯定邻居能up然后down的。假设此时邻居刚刚up，此时需要同步路由信息，假设C3900发出eigrp update报文，这里需注意update报文是单播，并且TTL==1 &amp; DST_MAC==N9K-1_SVI213_MAC<br>假设该报文hash到了po10右侧成员口，N9K-2收到update后，N9K-2查询DST_MAC, 发现是N9K-1的SVI MAC，并且N9K-2是配置了peer-gateway的，所以N9K-1 SVI MAC在本地mac addres-table中标记为G，对于这样的MAC，N9K-2会“代理”处理这个报文，于是继续查三层头并查询DST_IP做一次路由处理，结果自然是TTL-1 = 0从而update报文失效。</p>
+<p>如果没有peer-gateway特性，N9K-2收到这个update，N9K-2查询DST_MAC后发现出口为peer-link并且由于表项也没有G标识，就直接将update包透传给N9K-1，所以TTL到达N9K-1时依然==1，也就能被N9K-1正确处理</p>
+<p>关于peer-gateway的解释，如下：<br>Packets that arrive at the peer-gateway vPC device have their Time to Live (TTL) decremented, so that packets carrying a TTL of 1 might get dropped in transit due to TTL expiration. You should take this situation into account when the peer-gateway feature is enabled and particular network protocols that source packets with a TTL of 1 operate on a vPC VLAN.</p>
+<p>分别在N9K-1和N9K-2上ethanalyzer抓包更为直观</p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>N9K-1<br><img src="/images/peer-router-1-2.png" alt="peer-router-1-2 topo"></p>
+</blockquote>
+</blockquote>
+</blockquote>
+<p>N9K-1上只能看到N9K-1向C3900发的update，但是N9K-2没有回复UPDATE ACK</p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>N9K-2<br><img src="/images/peer-router-1-3.png" alt="peer-router-1-3 topo"></p>
+</blockquote>
+</blockquote>
+</blockquote>
+<p>N9K-1上没收到的UPDATE ACK都能在N9K-2上抓到，即这些包都被N9K-2丢了</p>
+<h3 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h3><p>workaround是配置’peer-router’，配置后，该场景下TTL不会减1</p>
+]]></content>
+  </entry>
+  <entry>
+    <title>ospf/eigrp flap caused by peer-gateway</title>
+    <url>/2020/11/06/ospf-eigrp-flap-caused-by-peer-gateway/</url>
+    <content><![CDATA[]]></content>
   </entry>
 </search>

@@ -79,13 +79,19 @@
 
 
 
-<meta property="og:type" content="website">
-<meta property="og:title" content="fucchen.dc">
-<meta property="og:url" content="http://yoursite.com/archives/index.html">
+<meta name="description" content="故障描述拓扑  先介绍下大体背景 VxLAN环境，ssp01a和ssp01b为spine并是RR, leaf01a和leaf02a为leaf，并跑vPC，leaf01a为vPC secondary 两台leaf上配置了出口静态缺省路由(红色箭头，两台leaf通过0.0&#x2F;32去往8.8)静态路由关联的是接口VLAN1350，如下: vrf context test  ip route 0.0.0.0">
+<meta property="og:type" content="article">
+<meta property="og:title" content="一个静态路由引起的环路问题">
+<meta property="og:url" content="http://yoursite.com/2020/11/07/%E8%AE%B0%E4%B8%80%E4%B8%AA%E9%9D%99%E6%80%81%E8%B7%AF%E7%94%B1%E5%BC%95%E8%B5%B7%E7%9A%84%E7%8E%AF%E8%B7%AF%E9%97%AE%E9%A2%98/index.html">
 <meta property="og:site_name" content="fucchen.dc">
+<meta property="og:description" content="故障描述拓扑  先介绍下大体背景 VxLAN环境，ssp01a和ssp01b为spine并是RR, leaf01a和leaf02a为leaf，并跑vPC，leaf01a为vPC secondary 两台leaf上配置了出口静态缺省路由(红色箭头，两台leaf通过0.0&#x2F;32去往8.8)静态路由关联的是接口VLAN1350，如下: vrf context test  ip route 0.0.0.0">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://yoursite.com/images/isis-bgp-loop.png">
+<meta property="article:published_time" content="2020-11-07T03:48:27.000Z">
+<meta property="article:modified_time" content="2020-11-15T14:10:35.618Z">
 <meta property="article:author" content="cfc">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/images/isis-bgp-loop.png">
 
 
 
@@ -115,13 +121,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/archives/"/>
+  <link rel="canonical" href="http://yoursite.com/2020/11/07/记一个静态路由引起的环路问题/"/>
 
 
 
 
 
-  <title>Archive | fucchen.dc</title>
+  <title>一个静态路由引起的环路问题 | fucchen.dc</title>
   
 
 
@@ -140,7 +146,7 @@
     
   
 
-  <div class="container sidebar-position-right page-archive">
+  <div class="container sidebar-position-right page-post-detail">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -248,411 +254,169 @@
           <div id="content" class="content">
             
 
-  
-  
-  
-  <div class="post-block archive">
-    <div id="posts" class="posts-collapse">
-      <span class="archive-move-on"></span>
+  <div id="posts" class="posts-expand">
+    
 
-      <span class="archive-page-counter">
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/11/07/%E8%AE%B0%E4%B8%80%E4%B8%AA%E9%9D%99%E6%80%81%E8%B7%AF%E7%94%B1%E5%BC%95%E8%B5%B7%E7%9A%84%E7%8E%AF%E8%B7%AF%E9%97%AE%E9%A2%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="cfc">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="fucchen.dc">
+    </span>
+
+    
+      <header class="post-header">
+
         
         
+          <h1 class="post-title" itemprop="name headline">一个静态路由引起的环路问题</h1>
         
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-07T11:48:27+08:00">
+                2020-11-07
+              </time>
+            
+
+            
+
+            
+          </span>
+
           
-        
-        Um..! 13 posts in total. Keep on posting.
-      </span>
 
-      
-
-        
-        
-        
-
-        
           
-          <div class="collection-title">
-            <h1 class="archive-year" id="archive-year-2020">2020</h1>
-          </div>
-        
-        
+            
+          
 
-        
+          
+          
 
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
+          
 
-      <h2 class="post-title">
-        
-            <a class="post-title-link" href="/2020/11/15/peer-gateway%E4%BD%9C%E7%94%A8%E4%B8%8B%EF%BC%8Ceigrp-ospf%E9%82%BB%E5%B1%85%E7%BF%BB%E5%8A%A8/" itemprop="url">
-              
-                <span itemprop="name">peer-gateway作用下，eigrp/ospf邻居翻动</span>
-              
-            </a>
-        
-      </h2>
+          
 
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2020-11-15T22:09:12+08:00"
-              content="2020-11-15" >
-          11-15
-        </time>
-      </div>
+          
 
-    </header>
-  </article>
+        </div>
+      </header>
+    
 
-
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
 
       
-
-        
-        
-        
-
-        
-        
-
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-            <a class="post-title-link" href="/2020/11/07/%E8%AE%B0%E4%B8%80%E4%B8%AA%E9%9D%99%E6%80%81%E8%B7%AF%E7%94%B1%E5%BC%95%E8%B5%B7%E7%9A%84%E7%8E%AF%E8%B7%AF%E9%97%AE%E9%A2%98/" itemprop="url">
-              
-                <span itemprop="name">一个静态路由引起的环路问题</span>
-              
-            </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2020-11-07T11:48:27+08:00"
-              content="2020-11-07" >
-          11-07
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
       
 
-        
-        
-        
-
-        
-        
-
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-            <a class="post-title-link" href="/2020/11/06/ospf-eigrp-flap-caused-by-peer-gateway/" itemprop="url">
-              
-                <span itemprop="name">ospf/eigrp flap caused by peer-gateway</span>
-              
-            </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2020-11-06T19:33:50+08:00"
-              content="2020-11-06" >
-          11-06
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
       
+        <h3 id="故障描述"><a href="#故障描述" class="headerlink" title="故障描述"></a>故障描述</h3><p>拓扑</p>
+<p><img src="/images/isis-bgp-loop.png" alt="isis-bgp-loop topo"></p>
+<p>先介绍下大体背景</p>
+<p>VxLAN环境，ssp01a和ssp01b为spine并是RR, leaf01a和leaf02a为leaf，并跑vPC，leaf01a为vPC secondary</p>
+<p>两台leaf上配置了出口静态缺省路由(红色箭头，两台leaf通过0.0/32去往8.8)静态路由关联的是接口VLAN1350，如下:</p>
+<p>vrf context test<br>  ip route 0.0.0.0/0 172.x.x.103    // 172.x.x.103印象是VLAN1350所在直连网段的一个NH</p>
+<p>随后leaf上两个动作</p>
+<ul>
+<li>将静态路由0.0/0通告到bgp evpn中</li>
+<li>将直连路由vlan1350通告到bgp evpn中</li>
+</ul>
+<p>随后leaf002</p>
+<p>客户做vPC切换(shut leaf01a peer-link)后，ssp下游的主机ping远端8.8完全不通</p>
+<p>分析：</p>
+<p>1/ 查这个故障时，故障状态下从ping源开始逐跳ELAM + show forwarding route xxx vrf xxx + show lldp neighbor确认实际转发路径，发现icmp request流量在leaf01a e1/49和ssp01a e1/9互联的链路上打环</p>
+<p>2/ 切换前leaf01a的RIB入下，去往8.8的路由为本地配置的静态路由，递归到vlan1350 am直连出口</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">leaf01a(config-<span class="keyword">if</span>-range)<span class="comment"># sh ip route 8.8.8.8 vrf test</span></span><br><span class="line">IP Route Table <span class="keyword">for</span> VRF <span class="string">"l3testing"</span></span><br><span class="line"><span class="string">'*'</span> denotes best ucast next-hop</span><br><span class="line"><span class="string">'**'</span> denotes best mcast next-hop</span><br><span class="line"><span class="string">'[x/y]'</span> denotes [preference/metric]</span><br><span class="line"><span class="string">'%&lt;string&gt;'</span> <span class="keyword">in</span> via output denotes VRF &lt;string&gt;</span><br><span class="line"></span><br><span class="line"><span class="number">0.0</span><span class="number">.0</span><span class="number">.0</span>/<span class="number">0</span>, ubest/mbest: <span class="number">1</span>/<span class="number">0</span></span><br><span class="line">    *via <span class="number">172.</span>xx.xx<span class="number">.103</span>, [<span class="number">1</span>/<span class="number">0</span>], <span class="number">00</span>:<span class="number">02</span>:<span class="number">09</span>, static</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">leaf01a(config-<span class="keyword">if</span>-range)<span class="comment"># sh ip route 172.xx.xx.103 vrf test</span></span><br><span class="line">IP Route Table <span class="keyword">for</span> VRF <span class="string">"l3testing"</span></span><br><span class="line"><span class="string">'*'</span> denotes best ucast next-hop</span><br><span class="line"><span class="string">'**'</span> denotes best mcast next-hop</span><br><span class="line"><span class="string">'[x/y]'</span> denotes [preference/metric]</span><br><span class="line"><span class="string">'%&lt;string&gt;'</span> <span class="keyword">in</span> via output denotes VRF &lt;string&gt;</span><br><span class="line"></span><br><span class="line"><span class="number">172.</span>xx.xx<span class="number">.103</span>/<span class="number">32</span>, ubest/mbest: <span class="number">1</span>/<span class="number">0</span>, attached</span><br><span class="line">    *via <span class="number">172.</span>xx.xx<span class="number">.103</span>, Vlan1350, [<span class="number">250</span>/<span class="number">0</span>], <span class="number">00</span>:<span class="number">02</span>:<span class="number">17</span>, am                 &lt;&lt;&lt; oif <span class="keyword">is</span> vlan1350</span><br><span class="line"></span><br><span class="line"><span class="number">3</span>/ shut peer-link后，由于keep-alive没动依然是up，leaf01a作为vPC secondary，将自己的vPC member port和SVI如SVI1350口状态置位suspend down</span><br><span class="line"></span><br><span class="line">此时看下leaf01a的RIB，发现缺省路由依然是up的，up的原因也很简单，配置的静态路由只关联了下一跳，只要该下一跳地址我路由可达，就可以让静态路由up</span><br><span class="line"></span><br><span class="line">IP Route Table <span class="keyword">for</span> VRF <span class="string">"test"</span></span><br><span class="line"><span class="string">'*'</span> denotes best ucast next-hop</span><br><span class="line"><span class="string">'**'</span> denotes best mcast next-hop</span><br><span class="line"><span class="string">'[x/y]'</span> denotes [preference/metric]</span><br><span class="line"><span class="string">'%&lt;string&gt;'</span> <span class="keyword">in</span> via output denotes VRF &lt;string&gt;</span><br><span class="line"></span><br><span class="line"><span class="number">0.0</span><span class="number">.0</span><span class="number">.0</span>/<span class="number">0</span>, ubest/mbest: <span class="number">1</span>/<span class="number">0</span></span><br><span class="line">    *via <span class="number">172.</span>xx.xx<span class="number">.103</span>, [<span class="number">1</span>/<span class="number">0</span>], <span class="number">00</span>:<span class="number">37</span>:<span class="number">19</span>, static</span><br><span class="line"></span><br><span class="line">leaf01a(config)<span class="comment"># sh ip route 172.xx.xx.103 vrf test</span></span><br><span class="line">IP Route Table <span class="keyword">for</span> VRF <span class="string">"test"</span></span><br><span class="line"><span class="string">'*'</span> denotes best ucast next-hop</span><br><span class="line"><span class="string">'**'</span> denotes best mcast next-hop</span><br><span class="line"><span class="string">'[x/y]'</span> denotes [preference/metric]</span><br><span class="line"><span class="string">'%&lt;string&gt;'</span> <span class="keyword">in</span> via output denotes VRF &lt;string&gt;</span><br><span class="line"></span><br><span class="line"><span class="number">172.</span>xx.x<span class="number">.96</span>/<span class="number">28</span>, ubest/mbest: <span class="number">1</span>/<span class="number">0</span></span><br><span class="line">    *via <span class="number">172.</span>xx.xx<span class="number">.54</span>, [<span class="number">200</span>/<span class="number">0</span>], <span class="number">00</span>:<span class="number">34</span>:<span class="number">36</span>, bgp<span class="number">-64603</span>, internal, tag <span class="number">64603</span></span><br><span class="line"></span><br><span class="line">leaf01a(config)<span class="comment"># sh ip route 172.xx.xx.54 vrf l3testing</span></span><br><span class="line">IP Route Table <span class="keyword">for</span> VRF <span class="string">"l3testing"</span></span><br><span class="line"><span class="string">'*'</span> denotes best ucast next-hop</span><br><span class="line"><span class="string">'**'</span> denotes best mcast next-hop</span><br><span class="line"><span class="string">'[x/y]'</span> denotes [preference/metric]</span><br><span class="line"><span class="string">'%&lt;string&gt;'</span> <span class="keyword">in</span> via output denotes VRF &lt;string&gt;</span><br><span class="line"></span><br><span class="line"><span class="number">172.</span>xx.xx<span class="number">.54</span>/<span class="number">32</span>, ubest/mbest: <span class="number">2</span>/<span class="number">0</span></span><br><span class="line">    *via <span class="number">172.</span>xx<span class="number">.40</span><span class="number">.1</span>, Eth1/<span class="number">49</span>, [<span class="number">115</span>/<span class="number">3</span>], <span class="number">3</span>d22h, isis<span class="number">-10</span>, L1	&lt;&lt;&lt; 去往<span class="number">8.8</span>的包可能从e1/<span class="number">49</span>发出</span><br><span class="line">	*via <span class="number">172.</span>xx<span class="number">.40</span><span class="number">.2</span>, Eth1/<span class="number">50</span>, [<span class="number">115</span>/<span class="number">3</span>], <span class="number">3</span>d22h, isis<span class="number">-10</span>, L1</span><br></pre></td></tr></table></figure>
 
-        
-        
-        
+<p>对0.0/32下一跳地址查路由，可以看到递归到最后是172.xx.xx.54/32(leaf02a loopback)的isis ecmp路由,两个出口分别是40.1(leaf01a连接ssp01a的接口)，40.2(leaf01a连接ssp01a的接口)</p>
+<p>所以现在配置的默认路由依然能up是因为默认路由关联的下一跳是可达的，于是这条静态默认路由也会被重分布到bgp中</p>
+<p>再来看spine ssp01a的RIB，去往8.8的路由是一条bgp 0.0路由，0.0路由就是分别从leaf01a和leaf02a重分布得到的，由选路规则leaf01a RouterID更小，所以优选leaf01a学来的路由</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">IP Route Table <span class="keyword">for</span> VRF <span class="string">"test"</span></span><br><span class="line"><span class="string">'*'</span> denotes best ucast next-hop</span><br><span class="line"><span class="string">'**'</span> denotes best mcast next-hop</span><br><span class="line"><span class="string">'[x/y]'</span> denotes [preference/metric]</span><br><span class="line"><span class="string">'%&lt;string&gt;'</span> <span class="keyword">in</span> via output denotes VRF &lt;string&gt;</span><br><span class="line"></span><br><span class="line"><span class="number">0.0</span><span class="number">.0</span><span class="number">.0</span>/<span class="number">0</span>, ubest/mbest: <span class="number">1</span>/<span class="number">0</span></span><br><span class="line">    *via <span class="number">172.</span>x.xx<span class="number">.53</span>, [<span class="number">200</span>/<span class="number">0</span>], <span class="number">3</span>d22h, bgp<span class="number">-64603</span>, internal, tag <span class="number">64603</span></span><br><span class="line"></span><br><span class="line">对下一条递归下，最终走的是e1/<span class="number">9</span></span><br><span class="line"></span><br><span class="line">ssp01a<span class="comment"># sh ip route 172.24.xx.53 vrf test</span></span><br><span class="line">IP Route Table <span class="keyword">for</span> VRF <span class="string">"l3testing"</span></span><br><span class="line"><span class="string">'*'</span> denotes best ucast next-hop</span><br><span class="line"><span class="string">'**'</span> denotes best mcast next-hop</span><br><span class="line"><span class="string">'[x/y]'</span> denotes [preference/metric]</span><br><span class="line"><span class="string">'%&lt;string&gt;'</span> <span class="keyword">in</span> via output denotes VRF &lt;string&gt;</span><br><span class="line"></span><br><span class="line"><span class="number">172.</span>x.x<span class="number">.53</span>/<span class="number">32</span>, ubest/mbest: <span class="number">1</span>/<span class="number">0</span></span><br><span class="line">    *via <span class="number">172.</span>xx.xx<span class="number">.53</span>, Eth1/<span class="number">9</span>, [<span class="number">115</span>/<span class="number">2</span>], <span class="number">3</span>d22h, isis<span class="number">-10</span>, L1</span><br><span class="line">     via <span class="number">172.</span>xx.xx<span class="number">.53</span>, Eth1/<span class="number">9</span>, [<span class="number">250</span>/<span class="number">0</span>], <span class="number">3</span>d22h, am</span><br></pre></td></tr></table></figure>
 
-        
-        
-
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-            <a class="post-title-link" href="/2020/05/11/ospf-stuck-in-exstart/" itemprop="url">
-              
-                <span itemprop="name">MTU问题导致ospf卡在EXSTART状态</span>
-              
-            </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2020-05-11T23:16:43+08:00"
-              content="2020-05-11" >
-          05-11
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
+<p>所以从leaf01a和ssp01a的路由表就能看到数据包在这条直连链路打环</p>
+<h3 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h3><p>leaf01a和leaf02a的静态路由0.0/0写的时候带上出接口VLAN1350，这样在peer-link down，使得leaf01a VLAN1350 suspend down后，leaf01a静态路由0.0/0直接自动失效，leaf01a 重分布0.0/0的动作也失效，这样ssp01a仅会收到从leaf02a重分布过来的0.0/0路由，并且指向leaf02a</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">vrf context test</span><br><span class="line">  ip route <span class="number">0.0</span><span class="number">.0</span><span class="number">.0</span>/<span class="number">0</span> Vlan1350 <span class="number">172.</span>xx.xx<span class="number">.103</span></span><br></pre></td></tr></table></figure>
       
-
-        
-        
-        
-
-        
-        
-
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-            <a class="post-title-link" href="/2020/05/11/sla-down/" itemprop="url">
-              
-                <span itemprop="name">sla down</span>
-              
-            </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2020-05-11T23:14:51+08:00"
-              content="2020-05-11" >
-          05-11
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
-      
-
-        
-        
-        
-
-        
-        
-
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-            <a class="post-title-link" href="/2020/05/11/vxlan-packet-loss/" itemprop="url">
-              
-                <span itemprop="name">vxlan double rmac问题导致丢流不通的问题</span>
-              
-            </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2020-05-11T23:04:21+08:00"
-              content="2020-05-11" >
-          05-11
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
-      
-
-        
-        
-        
-
-        
-        
-
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-            <a class="post-title-link" href="/2020/05/11/all-bgp-neighbor-down/" itemprop="url">
-              
-                <span itemprop="name">all bgp neighbor down</span>
-              
-            </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2020-05-11T21:53:42+08:00"
-              content="2020-05-11" >
-          05-11
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
-      
-
-        
-        
-        
-
-        
-        
-
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-            <a class="post-title-link" href="/2020/05/11/erspan-packet-loss-1/" itemprop="url">
-              
-                <span itemprop="name">erspan丢包问题</span>
-              
-            </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2020-05-11T20:32:06+08:00"
-              content="2020-05-11" >
-          05-11
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
-      
-
-        
-        
-        
-
-        
-        
-
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-            <a class="post-title-link" href="/2020/05/10/erspan-packet-loss/" itemprop="url">
-              
-                <span itemprop="name">启用erspan truncation后丢包</span>
-              
-            </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2020-05-10T13:04:42+08:00"
-              content="2020-05-10" >
-          05-10
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
-      
-
-        
-        
-        
-
-        
-        
-
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-            <a class="post-title-link" href="/2020/05/10/copp/" itemprop="url">
-              
-                <span itemprop="name">mtu-failure copp计数问题</span>
-              
-            </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated"
-              datetime="2020-05-10T09:12:11+08:00"
-              content="2020-05-10" >
-          05-10
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
-      
-
     </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/11/06/ospf-eigrp-flap-caused-by-peer-gateway/" rel="next" title="ospf/eigrp flap caused by peer-gateway">
+                <i class="fa fa-chevron-left"></i> ospf/eigrp flap caused by peer-gateway
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/11/15/peer-gateway%E4%BD%9C%E7%94%A8%E4%B8%8B%EF%BC%8Ceigrp-ospf%E9%82%BB%E5%B1%85%E7%BF%BB%E5%8A%A8/" rel="prev" title="peer-gateway作用下，eigrp/ospf邻居翻动">
+                peer-gateway作用下，eigrp/ospf邻居翻动 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
   </div>
   
   
   
-
-  
-  <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/archives/page/2/">2</a><a class="extend next" rel="next" href="/archives/page/2/">&lt;i class&#x3D;&quot;fa fa-angle-right&quot;&gt;&lt;&#x2F;i&gt;</a>
-  </nav>
+  </article>
 
 
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
 
 
           </div>
@@ -660,6 +424,10 @@
 
 
           
+
+  
+
+
 
         </div>
         
@@ -680,8 +448,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -732,6 +509,22 @@
         </div>
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#故障描述"><span class="nav-number">1.</span> <span class="nav-text">故障描述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#解决方法"><span class="nav-number">2.</span> <span class="nav-text">解决方法</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
@@ -872,6 +665,10 @@
 
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
 
   
 
