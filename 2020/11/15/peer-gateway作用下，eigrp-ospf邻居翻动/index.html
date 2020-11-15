@@ -79,18 +79,18 @@
 
 
 
-<meta name="description" content="涉及的IP已改 故障描述拓扑  eigrp&#x2F;ospf都可能遇到这个问题，原理一样，下面以eigrp举例说明 N9K-1和N9K-2跑vPC，C3900双上联到两台N9K，C3900通过SVI213和N9K-1 SVI213建EIGRP邻居后，邻居持续flapping 故障分析N9K上的vPC配置，其中配置了peer-gateway vpc domain 1  peer-switch  peer-k">
+<meta name="description" content="涉及的IP已改 故障描述拓扑  eigrp&#x2F;ospf都可能遇到这个问题，原理一样，下面以eigrp举例说明 N9K-1和N9K-2跑vPC，C3900双上联到两台N9K，C3900通过SVI213和N9K-1 SVI213建EIGRP邻居后，邻居持续flapping 故障分析N9K上的vPC配置，其中配置了peer-gateway 123456vpc domain 1  peer-switch">
 <meta property="og:type" content="article">
 <meta property="og:title" content="peer-gateway作用下，eigrp&#x2F;ospf邻居翻动">
 <meta property="og:url" content="http://yoursite.com/2020/11/15/peer-gateway%E4%BD%9C%E7%94%A8%E4%B8%8B%EF%BC%8Ceigrp-ospf%E9%82%BB%E5%B1%85%E7%BF%BB%E5%8A%A8/index.html">
 <meta property="og:site_name" content="fucchen.dc">
-<meta property="og:description" content="涉及的IP已改 故障描述拓扑  eigrp&#x2F;ospf都可能遇到这个问题，原理一样，下面以eigrp举例说明 N9K-1和N9K-2跑vPC，C3900双上联到两台N9K，C3900通过SVI213和N9K-1 SVI213建EIGRP邻居后，邻居持续flapping 故障分析N9K上的vPC配置，其中配置了peer-gateway vpc domain 1  peer-switch  peer-k">
+<meta property="og:description" content="涉及的IP已改 故障描述拓扑  eigrp&#x2F;ospf都可能遇到这个问题，原理一样，下面以eigrp举例说明 N9K-1和N9K-2跑vPC，C3900双上联到两台N9K，C3900通过SVI213和N9K-1 SVI213建EIGRP邻居后，邻居持续flapping 故障分析N9K上的vPC配置，其中配置了peer-gateway 123456vpc domain 1  peer-switch">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://yoursite.com/images/peer-router-1-1.png">
 <meta property="og:image" content="http://yoursite.com/images/peer-router-1-2.png">
 <meta property="og:image" content="http://yoursite.com/images/peer-router-1-3.png">
 <meta property="article:published_time" content="2020-11-15T14:09:12.000Z">
-<meta property="article:modified_time" content="2020-11-15T14:51:34.046Z">
+<meta property="article:modified_time" content="2020-11-15T15:06:36.948Z">
 <meta property="article:author" content="cfc">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://yoursite.com/images/peer-router-1-1.png">
@@ -343,26 +343,15 @@
 <p>eigrp/ospf都可能遇到这个问题，原理一样，下面以eigrp举例说明</p>
 <p>N9K-1和N9K-2跑vPC，C3900双上联到两台N9K，C3900通过SVI213和N9K-1 SVI213建EIGRP邻居后，邻居持续flapping</p>
 <h3 id="故障分析"><a href="#故障分析" class="headerlink" title="故障分析"></a>故障分析</h3><p>N9K上的vPC配置，其中配置了peer-gateway</p>
-<p>vpc domain 1<br>  peer-switch<br>  peer-keepalive destination 10.1.1.1 source 10.1.1.2 vrf vpcpeerkeepalive<br>  peer-gateway                        &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;<br>  auto-recovery</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">vpc domain <span class="number">1</span></span><br><span class="line">  peer-switch</span><br><span class="line">  peer-keepalive destination <span class="number">10.1</span><span class="number">.1</span><span class="number">.1</span> source <span class="number">10.1</span><span class="number">.1</span><span class="number">.2</span> vrf vpcpeerkeepalive</span><br><span class="line">  peer-gateway                        &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt; </span><br><span class="line">  auto-recovery</span><br></pre></td></tr></table></figure>
+
 <p>分析flap原因，既然是flap，肯定邻居能up然后down的。假设此时邻居刚刚up，此时需要同步路由信息，假设C3900发出eigrp update报文，这里需注意update报文是单播，并且TTL==1 &amp; DST_MAC==N9K-1_SVI213_MAC<br>假设该报文hash到了po10右侧成员口，N9K-2收到update后，N9K-2查询DST_MAC, 发现是N9K-1的SVI MAC，并且N9K-2是配置了peer-gateway的，所以N9K-1 SVI MAC在本地mac addres-table中标记为G，对于这样的MAC，N9K-2会“代理”处理这个报文，于是继续查三层头并查询DST_IP做一次路由处理，结果自然是TTL-1 = 0从而update报文失效。</p>
 <p>如果没有peer-gateway特性，N9K-2收到这个update，N9K-2查询DST_MAC后发现出口为peer-link并且由于表项也没有G标识，就直接将update包透传给N9K-1，所以TTL到达N9K-1时依然==1，也就能被N9K-1正确处理</p>
 <p>关于peer-gateway的解释，如下：<br>Packets that arrive at the peer-gateway vPC device have their Time to Live (TTL) decremented, so that packets carrying a TTL of 1 might get dropped in transit due to TTL expiration. You should take this situation into account when the peer-gateway feature is enabled and particular network protocols that source packets with a TTL of 1 operate on a vPC VLAN.</p>
 <p>分别在N9K-1和N9K-2上ethanalyzer抓包更为直观</p>
-<blockquote>
-<blockquote>
-<blockquote>
 <p>N9K-1<br><img src="/images/peer-router-1-2.png" alt="peer-router-1-2 topo"></p>
-</blockquote>
-</blockquote>
-</blockquote>
 <p>N9K-1上只能看到N9K-1向C3900发的update，但是N9K-2没有回复UPDATE ACK</p>
-<blockquote>
-<blockquote>
-<blockquote>
 <p>N9K-2<br><img src="/images/peer-router-1-3.png" alt="peer-router-1-3 topo"></p>
-</blockquote>
-</blockquote>
-</blockquote>
 <p>N9K-1上没收到的UPDATE ACK都能在N9K-2上抓到，即这些包都被N9K-2丢了</p>
 <h3 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h3><p>workaround是配置’peer-router’，配置后，该场景下TTL不会减1</p>
 
