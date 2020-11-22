@@ -403,15 +403,13 @@
 <p>所以现在的问题转变成为什么收到了下游的report但不加表。把igmp report报文摘出来后发现虽然是igmpv3，但source是0.0.0.0即Any source，这和N9K使用的组播模式SSM(specific source multicast)相悖了。</p>
 <p>把这种特殊报文到LAB里重放后，发现可以重现，行为如下：</p>
 <p>运行SSM模式的N9K收到Any source的IGMPv3不装IGMP group表，当收到Specific source的IGMPv3才会装IGMP group表，如下是分别收到带源igmpv3和不带源igmpv3的N9K debug处理行为，可以看到当N9K收到any source(*,G)的igmp report时，显示not allowed，而如果收到(S,G)的igmp report时，能正常创建表项</p>
-<p>N9K_3(config)# sh ip igmp internal event-history events</p>
-<p>events events for IGMP process<br>2020 Oct 16 07:32:32.118424 igmp [30105]: : (*,G) reports not allowed for SSM groups            &lt;&lt;&lt; 收到不带源的IGMP<br>2020 Oct 16 07:31:43.412147 igmp [30105]: : igmp_receive_report:Entry created : Triggering igmp_mrib_schedule_update(ADD) for (1.1.1.1, 239.0.0.21) oif: Vlan1302         &lt;&lt;&lt; 收到带源的IGMP</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">N9K_3(config)<span class="comment"># sh ip igmp internal event-history events</span></span><br><span class="line"></span><br><span class="line">events events <span class="keyword">for</span> IGMP process</span><br><span class="line"><span class="number">2020</span> Oct <span class="number">16</span> <span class="number">07</span>:<span class="number">32</span>:<span class="number">32.118424</span> igmp [<span class="number">30105</span>]: : (*,G) reports <span class="keyword">not</span> allowed <span class="keyword">for</span> SSM groups            &lt;&lt;&lt; 收到不带源的IGMP</span><br><span class="line"><span class="number">2020</span> Oct <span class="number">16</span> <span class="number">07</span>:<span class="number">31</span>:<span class="number">43.412147</span> igmp [<span class="number">30105</span>]: : igmp_receive_report:Entry created : Triggering igmp_mrib_schedule_update(ADD) <span class="keyword">for</span> (<span class="number">1.1</span><span class="number">.1</span><span class="number">.1</span>, <span class="number">239.0</span><span class="number">.0</span><span class="number">.21</span>) oif: Vlan1302         &lt;&lt;&lt; 收到带源的IGMP</span><br></pre></td></tr></table></figure>
+
 <p>SSM的原理是LHR收到IGMP report，假设report中是(source 10.1.1.1, MS 239.0.0.21)，LHR会根据单播路由表朝着source 10.1.1.1的方向发生PIM (S,G)Join，创建源树，我理解如果report中没有source ip的话，是没办法和源创建源树的。</p>
 <p>对应2个解决方法</p>
 <ul>
-<li><p>服务器IGMPv3配置上特定源</p>
-</li>
-<li><p>如果服务器设置不了，就使用ASM(Any source multicast)模式，需要额外配置RP</p>
-</li>
+<li>服务器IGMPv3配置上特定源</li>
+<li>如果服务器设置不了，就使用ASM(Any source multicast)模式，需要额外配置RP</li>
 </ul>
 <p>由于客户接收组播流量的终端无法指定igmpv3特定源，于是改成了ASM模式，改完后igmp group表终于能看到下游的igmp report了，mrib中的（S,G）也有了出接口，最后客户在接收者tcpdump抓了包，也确定能抓到组播流量了。</p>
 <p>完结撒花！</p>
