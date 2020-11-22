@@ -263,6 +263,139 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/05/10/copp/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="cfc">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="fucchen.dc">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/05/10/copp/" itemprop="url">mtu-failure copp计数问题</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-05-10T09:12:11+08:00">
+                2020-05-10
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h3 id="故障描述"><a href="#故障描述" class="headerlink" title="故障描述"></a>故障描述</h3><p>在与客户排查erspan丢包问题时产生的衍生问题，客户发现当现网有大量mtu-failure的流量(如SVI101 MTU1500，而实际需要穿越SVI101的packet size &gt; 1500)的时候，copp显示包丢在class-map copp-system-p-class-exception而非mtu-failure所在的copp-system-p-class-exception-diag里</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span>-<span class="title">map</span> <span class="title">copp</span>-<span class="title">system</span>-<span class="title">p</span>-<span class="title">class</span>-<span class="title">exception</span> <span class="params">(match-any)</span></span></span><br><span class="line"><span class="class">      <span class="title">match</span> <span class="title">exception</span> <span class="title">ip</span> <span class="title">option</span></span></span><br><span class="line"><span class="class">      <span class="title">match</span> <span class="title">exception</span> <span class="title">ip</span> <span class="title">icmp</span> <span class="title">unreachable</span></span></span><br><span class="line"><span class="class">      <span class="title">match</span> <span class="title">exception</span> <span class="title">ipv6</span> <span class="title">option</span></span></span><br><span class="line"><span class="class">      <span class="title">match</span> <span class="title">exception</span> <span class="title">ipv6</span> <span class="title">icmp</span> <span class="title">unreachable</span></span></span><br><span class="line"><span class="class">      <span class="title">set</span> <span class="title">cos</span> 1</span></span><br><span class="line">      police cir 150 kbps , bc 32000 bytes </span><br><span class="line">      module <span class="number">1</span> :</span><br><span class="line">        transmitted <span class="number">416162</span> bytes;</span><br><span class="line">        dropped <span class="number">23188</span> bytes;			&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt; 实际mtu-failure的流量都hit到这个<span class="class"><span class="keyword">class</span>-<span class="title">map</span>里</span></span><br><span class="line"><span class="class"></span></span><br><span class="line"><span class="class">    <span class="title">class</span>-<span class="title">map</span> <span class="title">copp</span>-<span class="title">system</span>-<span class="title">p</span>-<span class="title">class</span>-<span class="title">exception</span>-<span class="title">diag</span> <span class="params">(match-any)</span></span></span><br><span class="line"><span class="class">      <span class="title">match</span> <span class="title">exception</span> <span class="title">ttl</span>-<span class="title">failure</span></span></span><br><span class="line"><span class="class">      <span class="title">match</span> <span class="title">exception</span> <span class="title">mtu</span>-<span class="title">failure</span>		&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt; <span class="title">mtu</span>-<span class="title">failure</span>所在的<span class="title">copp</span>-<span class="title">system</span>-<span class="title">p</span>-<span class="title">class</span>-<span class="title">exception</span>-<span class="title">diag</span>没有匹配到<span class="title">mtu</span>-<span class="title">failure</span>的流量</span></span><br><span class="line"><span class="class">      <span class="title">set</span> <span class="title">cos</span> 1</span></span><br><span class="line">      police cir 150 kbps , bc 32000 bytes </span><br><span class="line">      module <span class="number">1</span> :</span><br><span class="line">        transmitted <span class="number">0</span> bytes;</span><br><span class="line">        dropped <span class="number">0</span> bytes;</span><br></pre></td></tr></table></figure>
+
+<h3 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h3><p>1/ LAB中测试往N9K打mtu-failure流量，问题能复现</p>
+<p>2/ 目测正常行为，查文档看到有下面这句话可以解释这个现象</p>
+<p>For Cisco Nexus 9200 Series switches, ip icmp redirect, ipv6 icmp redirect, ip icmp unreachable, ipv6 icmp unreachable, and mtu-failure use the same TCAM entry, and they will all be classified to the class map where the first exception is present in the policy. In the CoPP strict profile, they are classified to the class-exception class map. In a different CoPP policy, if the first exception is in a different class map (for example, class-exception-diag), the rest of the exceptions will be classified to the same class map.</p>
+<p>这句话意思是ip icmp redirect, ipv6 icmp redirect, ip icmp unreachable, ipv6 icmp unreachable, and mtu-failure由于design上是写在同一个hardware TCAM entry里的，所以实际上这些exception是一起计数的，并且都会一起计数到第一个包含这些任意exception的class-map里。</p>
+<p>3/ LAB举例说明一下，比如我手动定义COPP policy-map，只包含两个class-map class ip icmp unreachable和class default</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">N9K<span class="number">-08</span>(config-pmap)<span class="comment"># show policy-map interface control-plane</span></span><br><span class="line">Control Plane</span><br><span class="line"> </span><br><span class="line">  Service-policy  input: test</span><br><span class="line"> </span><br><span class="line">    <span class="class"><span class="keyword">class</span>-<span class="title">map</span> <span class="title">ip</span>-<span class="title">icmp</span>-<span class="title">unreachable</span> <span class="params">(match-any)</span></span></span><br><span class="line"><span class="class">      <span class="title">match</span> <span class="title">exception</span> <span class="title">ip</span> <span class="title">icmp</span> <span class="title">unreachable</span>                &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt; 我在这个<span class="title">class</span>-<span class="title">map</span>里只<span class="title">match</span>了<span class="title">ip</span> <span class="title">icmp</span> <span class="title">unreachable</span>的<span class="title">exception</span>流量</span></span><br><span class="line">      police cir 100000 bps , bc 32000 bytes </span><br><span class="line">      module <span class="number">1</span> :</span><br><span class="line">        transmitted <span class="number">119288</span> bytes;</span><br><span class="line">        dropped <span class="number">4719936</span> bytes;                           &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt; 往这台N9K打大量mtu-failure的tcp流量的时候，这个<span class="class"><span class="keyword">class</span>-<span class="title">map</span>的<span class="title">drop</span>就开始涨了</span></span><br><span class="line"><span class="class"> </span></span><br><span class="line"><span class="class">    <span class="title">class</span>-<span class="title">map</span> <span class="title">class</span>-<span class="title">default</span> <span class="params">(match-any)</span></span></span><br><span class="line">      police cir 10000 bps , bc 32000 bytes </span><br><span class="line">      module <span class="number">1</span> :</span><br><span class="line">        transmitted <span class="number">1514</span> bytes;</span><br><span class="line">        dropped <span class="number">0</span> bytes;</span><br><span class="line"></span><br><span class="line">这个现象的原因就如上面文档描述，ip icmp unreachable和mtu-failure这些exception是一起计数的</span><br></pre></td></tr></table></figure>
+
+<p>再回到设备默认的COPP policy-map，默认包含exception的class-map顺序如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">N9K<span class="number">-08</span>(config)<span class="comment"># show policy-map interface control-plane | i exception prev 3</span></span><br><span class="line">  Service-policy  input: copp-system-p-policy-strict</span><br><span class="line"> </span><br><span class="line">    <span class="class"><span class="keyword">class</span>-<span class="title">map</span> <span class="title">copp</span>-<span class="title">system</span>-<span class="title">p</span>-<span class="title">class</span>-<span class="title">l3uc</span>-<span class="title">data</span> <span class="params">(match-any)</span></span></span><br><span class="line"><span class="class">      <span class="title">match</span> <span class="title">exception</span> <span class="title">glean</span></span></span><br><span class="line"><span class="class">--</span></span><br><span class="line">        dropped 0 bytes;</span><br><span class="line"> </span><br><span class="line">    <span class="class"><span class="keyword">class</span>-<span class="title">map</span> <span class="title">copp</span>-<span class="title">system</span>-<span class="title">p</span>-<span class="title">class</span>-<span class="title">l3mc</span>-<span class="title">data</span> <span class="params">(match-any)</span></span></span><br><span class="line"><span class="class">      <span class="title">match</span> <span class="title">exception</span> <span class="title">multicast</span> <span class="title">rpf</span>-<span class="title">failure</span></span></span><br><span class="line"><span class="class">      <span class="title">match</span> <span class="title">exception</span> <span class="title">multicast</span> <span class="title">dest</span>-<span class="title">miss</span></span></span><br><span class="line"><span class="class">--</span></span><br><span class="line">        transmitted 0 bytes;</span><br><span class="line">        dropped <span class="number">0</span> bytes;</span><br><span class="line"> </span><br><span class="line">    <span class="class"><span class="keyword">class</span>-<span class="title">map</span> <span class="title">copp</span>-<span class="title">system</span>-<span class="title">p</span>-<span class="title">class</span>-<span class="title">exception</span> <span class="params">(match-any)</span></span></span><br><span class="line"><span class="class">      <span class="title">match</span> <span class="title">exception</span> <span class="title">ip</span> <span class="title">option</span></span></span><br><span class="line"><span class="class">      <span class="title">match</span> <span class="title">exception</span> <span class="title">ip</span> <span class="title">icmp</span> <span class="title">unreachable</span>              </span></span><br><span class="line"><span class="class">      <span class="title">match</span> <span class="title">exception</span> <span class="title">ipv6</span> <span class="title">option</span></span></span><br><span class="line"><span class="class">      <span class="title">match</span> <span class="title">exception</span> <span class="title">ipv6</span> <span class="title">icmp</span> <span class="title">unreachable</span></span></span><br><span class="line"><span class="class">--</span></span><br><span class="line">        transmitted 5147116 bytes;</span><br><span class="line">        dropped <span class="number">132431076</span> bytes;</span><br><span class="line"> </span><br><span class="line">    <span class="class"><span class="keyword">class</span>-<span class="title">map</span> <span class="title">copp</span>-<span class="title">system</span>-<span class="title">p</span>-<span class="title">class</span>-<span class="title">exception</span>-<span class="title">diag</span> <span class="params">(match-any)</span></span></span><br><span class="line"><span class="class">      <span class="title">match</span> <span class="title">exception</span> <span class="title">ttl</span>-<span class="title">failure</span></span></span><br><span class="line"><span class="class">      <span class="title">match</span> <span class="title">exception</span> <span class="title">mtu</span>-<span class="title">failure</span></span></span><br></pre></td></tr></table></figure>
+
+<p>copp-system-p-class-exception是第一个包含ip icmp redirect, ipv6 icmp redirect, ip icmp unreachable, ipv6 icmp unreachable, and mtu-failure这些任意一个exception的class-map，所以这几个exception统统记录到class-map copp-system-p-class-exception里。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/05/10/hsrp-dual-active/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -733,7 +866,7 @@
               
                 <a href="/archives/%20%7C%7C%20archive">
               
-                  <span class="site-state-item-count">13</span>
+                  <span class="site-state-item-count">14</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
