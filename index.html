@@ -263,6 +263,170 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/12/01/%E8%B7%AF%E7%94%B1%E8%BD%AF%E7%A1%AC%E4%BB%B6%E4%B8%8D%E4%B8%80%E8%87%B4%E4%BA%A7%E7%94%9F%E5%BB%B6%E6%97%B6%E4%B8%A2%E5%8C%85%E9%97%AE%E9%A2%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="cfc">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="fucchen.dc">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/12/01/%E8%B7%AF%E7%94%B1%E8%BD%AF%E7%A1%AC%E4%BB%B6%E4%B8%8D%E4%B8%80%E8%87%B4%E4%BA%A7%E7%94%9F%E5%BB%B6%E6%97%B6%E4%B8%A2%E5%8C%85%E9%97%AE%E9%A2%98/" itemprop="url">路由软硬件不一致产生延时丢包问题</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-12-01T14:54:21+08:00">
+                2020-12-01
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h3 id="故障描述"><a href="#故障描述" class="headerlink" title="故障描述"></a>故障描述</h3><p>拓扑</p>
+<p><img src="/images/lpm-1-1.png" alt="lpm-1-1 topo"></p>
+<ul>
+<li>部分VLAN如VLAN 116下的PC(10.11.116.7)访问外网Server(10.128.5.117)时延时大，并有10%左右的丢包</li>
+<li>VLAN116的网关在两台做vPC的N3K上，2960双上联到两台N3K</li>
+<li>ASA-A为主墙，ASA-B为备墙</li>
+<li>客户在N3K-A上联口下联口同时抓包，发现N3K-A向上发出icmp request到收到icmp reply时间差很短，但对比N3K-A从收到icmp reply到将该reply发送到下联口的时间差较大，故初步判断延时是由N3K-A产生，客户shutdown N3K-A SVI116，故障恢复</li>
+</ul>
+<h3 id="排查过程"><a href="#排查过程" class="headerlink" title="排查过程"></a>排查过程</h3><p>1/ 丢包期间N3K-A上copp上的class-map copp-s-l3destmiss丢包计数不断增长</p>
+<p>1st<br>    class-map copp-s-l3destmiss (match-any)<br>      police pps 100<br>        OutPackets    34435805<br>        DropPackets   848325        &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</p>
+<p>2nd<br>    class-map copp-s-l3destmiss (match-any)<br>      police pps 100<br>        OutPackets    42958127<br>        DropPackets   868428        &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</p>
+<p>copp-s-l3destmiss含义如下</p>
+<p>Layer 3 traffic with a miss for the lookup in the hardware Layer 3 forwarding table.</p>
+<p>简单展开下，数据包到交换机后，L2查完若需要路由，在L3硬件表项中查询L3 dst ip，如果L3硬件表项中查不到，就会上到CPU进行软件处理，上CPU的流量都会被copp分类 &amp; 限速，L3硬件表项中查不到的这类流量就在copp-s-l3destmiss中计数，此时该class-map的DropPackets会不断增长，而当这样的实时流量超出系统为该class-map设置的阈值pps 100后，超出部分被丢弃，计在DropPackets中；所以基于此，可能是reply回包进入N3K-A，该数据包在硬件层面没有路由能匹配到它，于是回包都上CPU了。</p>
+<p>2/ 先检查两台N3K syslog，发现如下异常log：</p>
+<p>2019 May 10 14:26:12 N3K-A %$ VDC-1 %$ %IPFIB-2-FIB_TCAM_RESOURCE_EXHAUSTION_LPM_IPV4: FIB TCAM exhausted for IPV4 routes in LPM table</p>
+<p>该log表示LPM路由(longest prefix match)的硬件资源耗尽,非主机路由或者说是非/32位的路由都属于LPM路由</p>
+<p>3/ 检查N3K-A的硬件表项使用可以发现硬件LPM路由空间基本已经耗尽</p>
+<p>DS-DFA-N3K# show hardware profile status </p>
+<h1 id="slot-1"><a href="#slot-1" class="headerlink" title="slot  1"></a>slot  1</h1><p>Total LPM Entries = 7679.             &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;<br>Total Host Entries = 16384.<br>Reserved LPM Entries = 1024.<br>Max Host4/Host6 Limit Entries (shared)=  8192/4096*<br>Max Mcast Limit Entries = 4096.<br>Max IPv6 Mcast Limit Entries = 2048.<br>Max Ucast IPv6 LPM Limit Entries = 2048.<br>Max Ucast IPv6 LPM_65_to_127 Limit Entries = 128.<br>Used LPM Entries (Total) = 7676.     &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</p>
+<p>由于N3K vlan116是/24为的，所以也是LPM路由，怀疑该路由没被硬件编程到LPM Table中</p>
+<p>4/ 检查两台N3K LPM路由的硬件编程情况，由于vlan116当时故障时没有相关信息没有记录到，这里以另一个路由举例，vrf test中的LPM路由10.128.4.0/22有较大延时</p>
+<p>先取vrf test的id，得到id为36，结合如下命令可以看到10.128.4.0/22没有在id为36的vrf中编程</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">N3K-A(config)<span class="comment"># show vrf all</span></span><br><span class="line">VRF-Name                           VRF-ID State   Reason                        </span><br><span class="line">...snip...                         </span><br><span class="line">test                           		   <span class="number">36</span> Up      --   		&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;                         </span><br><span class="line">KeepAlive-Link                         <span class="number">37</span> Up      --                            </span><br><span class="line">default                                 <span class="number">1</span> Up      --                            </span><br><span class="line">management                              <span class="number">2</span> Up      --</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">N3K-A(config)<span class="comment"># bcm-shell module 1 "l3 defip show" | in 10.12.14.0/22</span></span><br><span class="line"><span class="comment">#     VRF     Net addr             Next Hop Mac        INTF MODID PORT PRIO CLASS HIT VLAN</span></span><br><span class="line"><span class="number">3488</span>  <span class="number">3</span>        <span class="number">10.12</span><span class="number">.14</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100061</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> n</span><br><span class="line"><span class="number">3490</span>  <span class="number">28</span>       <span class="number">10.12</span><span class="number">.14</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100084</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> n</span><br><span class="line"><span class="number">3494</span>  <span class="number">21</span>       <span class="number">10.12</span><span class="number">.14</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100062</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y</span><br><span class="line"><span class="number">3499</span>  <span class="number">15</span>       <span class="number">10.12</span><span class="number">.14</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100074</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> n</span><br><span class="line"><span class="number">3500</span>  <span class="number">10</span>       <span class="number">10.12</span><span class="number">.14</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100085</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y</span><br><span class="line"><span class="number">3501</span>  <span class="number">1</span>        <span class="number">10.12</span><span class="number">.14</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">200002</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y      (ECMP)</span><br><span class="line"><span class="number">3502</span>  <span class="number">8</span>        <span class="number">10.12</span><span class="number">.14</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100053</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y</span><br><span class="line"><span class="number">3502</span>  <span class="number">22</span>       <span class="number">10.12</span><span class="number">.14</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100089</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y</span><br><span class="line"><span class="number">3504</span>  <span class="number">14</span>       <span class="number">10.12</span><span class="number">.14</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100077</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y</span><br><span class="line"><span class="number">3505</span>  <span class="number">16</span>       <span class="number">10.12</span><span class="number">.14</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100093</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y</span><br><span class="line"><span class="number">3506</span>  <span class="number">26</span>       <span class="number">10.12</span><span class="number">.14</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100056</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> n</span><br><span class="line"><span class="number">3507</span>  <span class="number">13</span>       <span class="number">10.12</span><span class="number">.14</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100042</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y</span><br><span class="line"><span class="number">3507</span>  <span class="number">19</span>       <span class="number">10.12</span><span class="number">.14</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100070</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y</span><br><span class="line"><span class="number">3510</span>  <span class="number">29</span>       <span class="number">10.12</span><span class="number">.14</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100041</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> n</span><br><span class="line"><span class="number">3514</span>  <span class="number">18</span>       <span class="number">10.12</span><span class="number">.14</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100068</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y</span><br><span class="line"><span class="number">3517</span>  <span class="number">30</span>       <span class="number">10.12</span><span class="number">.14</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100048</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> n</span><br><span class="line"><span class="number">3518</span>  <span class="number">23</span>       <span class="number">10.12</span><span class="number">.14</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100055</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y</span><br><span class="line"><span class="number">3519</span>  <span class="number">24</span>       <span class="number">10.12</span><span class="number">.14</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100037</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y</span><br><span class="line"><span class="number">3520</span>  <span class="number">9</span>        <span class="number">10.12</span><span class="number">.14</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100060</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y</span><br><span class="line"><span class="number">3523</span>  <span class="number">11</span>       <span class="number">10.12</span><span class="number">.14</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100082</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y</span><br><span class="line"><span class="number">3526</span>  <span class="number">17</span>       <span class="number">10.12</span><span class="number">.14</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100069</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y</span><br><span class="line"><span class="number">3529</span>  <span class="number">4</span>        <span class="number">10.12</span><span class="number">.14</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100066</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> n</span><br><span class="line"><span class="number">3533</span>  <span class="number">33</span>       <span class="number">10.12</span><span class="number">.14</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100072</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> n</span><br><span class="line"><span class="number">3536</span>  <span class="number">5</span>        <span class="number">10.12</span><span class="number">.14</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100087</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y</span><br><span class="line"><span class="number">3540</span>  <span class="number">12</span>       <span class="number">10.12</span><span class="number">.14</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100054</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y</span><br><span class="line"><span class="number">3542</span>  <span class="number">27</span>       <span class="number">10.12</span><span class="number">.14</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100039</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y</span><br><span class="line"><span class="number">3546</span>  <span class="number">35</span>       <span class="number">10.12</span><span class="number">.14</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100075</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> n</span><br><span class="line"><span class="number">3547</span>  <span class="number">6</span>        <span class="number">10.12</span><span class="number">.14</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100064</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y</span><br><span class="line"><span class="number">3550</span>  <span class="number">34</span>       <span class="number">10.12</span><span class="number">.14</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100080</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> n</span><br><span class="line"><span class="number">3555</span>  <span class="number">7</span>        <span class="number">10.12</span><span class="number">.14</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100058</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y</span><br><span class="line"><span class="number">3557</span>  <span class="number">20</span>       <span class="number">10.12</span><span class="number">.14</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100059</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y</span><br><span class="line"><span class="number">3558</span>  <span class="number">25</span>       <span class="number">10.12</span><span class="number">.14</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100052</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y</span><br><span class="line"><span class="number">3564</span>  <span class="number">31</span>       <span class="number">10.12</span><span class="number">.14</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100047</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y</span><br><span class="line"><span class="number">3565</span>  <span class="number">32</span>       <span class="number">10.12</span><span class="number">.14</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100091</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> n</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<blockquote>
+<blockquote>
+<p>随后检查该路由在N3K-A的id为36(vrf test)有在硬件中编程</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">N3K-B<span class="comment"># bcm-shell module 1 "l3 defip show" | in 10.128.4.0/22</span></span><br><span class="line"><span class="number">3495</span>  <span class="number">11</span>       <span class="number">10.128</span><span class="number">.4</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100057</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y</span><br><span class="line"><span class="number">3496</span>  <span class="number">15</span>       <span class="number">10.128</span><span class="number">.4</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100060</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> n</span><br><span class="line"><span class="number">3497</span>  <span class="number">25</span>       <span class="number">10.128</span><span class="number">.4</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100095</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y</span><br><span class="line"><span class="number">3498</span>  <span class="number">7</span>        <span class="number">10.128</span><span class="number">.4</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100104</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y</span><br><span class="line"><span class="number">3500</span>  <span class="number">24</span>       <span class="number">10.128</span><span class="number">.4</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100066</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y</span><br><span class="line"><span class="number">3502</span>  <span class="number">19</span>       <span class="number">10.128</span><span class="number">.4</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100091</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> n</span><br><span class="line"><span class="number">3505</span>  <span class="number">23</span>       <span class="number">10.128</span><span class="number">.4</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100107</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> n</span><br><span class="line"><span class="number">3507</span>  <span class="number">21</span>       <span class="number">10.128</span><span class="number">.4</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100102</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y</span><br><span class="line"><span class="number">3510</span>  <span class="number">30</span>       <span class="number">10.128</span><span class="number">.4</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100094</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> n</span><br><span class="line"><span class="number">3512</span>  <span class="number">35</span>       <span class="number">10.128</span><span class="number">.4</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100064</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y</span><br><span class="line"><span class="number">3515</span>  <span class="number">33</span>       <span class="number">10.128</span><span class="number">.4</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100043</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> n</span><br><span class="line"><span class="number">3517</span>  <span class="number">34</span>       <span class="number">10.128</span><span class="number">.4</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100054</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> n</span><br><span class="line"><span class="number">3523</span>  <span class="number">10</span>       <span class="number">10.128</span><span class="number">.4</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100063</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y</span><br><span class="line"><span class="number">3525</span>  <span class="number">18</span>       <span class="number">10.128</span><span class="number">.4</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100101</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y</span><br><span class="line"><span class="number">3527</span>  <span class="number">26</span>       <span class="number">10.128</span><span class="number">.4</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100099</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> n</span><br><span class="line"><span class="number">3530</span>  <span class="number">32</span>       <span class="number">10.128</span><span class="number">.4</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100096</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> n</span><br><span class="line"><span class="number">3532</span>  <span class="number">27</span>       <span class="number">10.128</span><span class="number">.4</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100087</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y</span><br><span class="line"><span class="number">3540</span>  <span class="number">8</span>        <span class="number">10.128</span><span class="number">.4</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100062</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y</span><br><span class="line"><span class="number">3542</span>  <span class="number">16</span>       <span class="number">10.128</span><span class="number">.4</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100051</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y</span><br><span class="line"><span class="number">3545</span>  <span class="number">28</span>       <span class="number">10.128</span><span class="number">.4</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100039</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> n</span><br><span class="line"><span class="number">3547</span>  <span class="number">29</span>       <span class="number">10.128</span><span class="number">.4</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100055</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> n</span><br><span class="line"><span class="number">3550</span>  <span class="number">17</span>       <span class="number">10.128</span><span class="number">.4</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100093</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y</span><br><span class="line"><span class="number">3552</span>  <span class="number">31</span>       <span class="number">10.128</span><span class="number">.4</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100058</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y</span><br><span class="line"><span class="number">3554</span>  <span class="number">20</span>       <span class="number">10.128</span><span class="number">.4</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100098</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y</span><br><span class="line"><span class="number">3555</span>  <span class="number">14</span>       <span class="number">10.128</span><span class="number">.4</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100067</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y</span><br><span class="line"><span class="number">3556</span>  <span class="number">12</span>       <span class="number">10.128</span><span class="number">.4</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100045</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y</span><br><span class="line"><span class="number">3559</span>  <span class="number">36</span>       <span class="number">10.128</span><span class="number">.4</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100103</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y   &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt; lpm route <span class="number">10.128</span><span class="number">.4</span><span class="number">.0</span>/<span class="number">22</span> <span class="keyword">in</span> vrf test get programmed</span><br><span class="line"><span class="number">3562</span>  <span class="number">9</span>        <span class="number">10.128</span><span class="number">.4</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100041</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y</span><br><span class="line"><span class="number">3567</span>  <span class="number">22</span>       <span class="number">10.128</span><span class="number">.4</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100053</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y</span><br><span class="line"><span class="number">3570</span>  <span class="number">13</span>       <span class="number">10.128</span><span class="number">.4</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100100</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y</span><br><span class="line"><span class="number">3575</span>  <span class="number">1</span>        <span class="number">10.128</span><span class="number">.4</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">200002</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y      (ECMP)</span><br><span class="line"><span class="number">3575</span>  <span class="number">3</span>        <span class="number">10.128</span><span class="number">.4</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100097</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y</span><br><span class="line"><span class="number">3576</span>  <span class="number">4</span>        <span class="number">10.128</span><span class="number">.4</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100047</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y</span><br><span class="line"><span class="number">3576</span>  <span class="number">6</span>        <span class="number">10.128</span><span class="number">.4</span><span class="number">.0</span>/<span class="number">22</span>        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">100049</span>    <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>    <span class="number">0</span> y</span><br></pre></td></tr></table></figure>
+
+<p>把信息全串联起来，结论如下：</p>
+<p>1）LPM Table耗尽说明软件层面学习到的LPM路由数量大于硬件层面LPM table的最大承载容量<br>2）LPM table中无法被硬件编程的LPM路由从LPM Table中溢出，这里假设溢出的是SVI 116所在的LPM路由10.11.116.0/24，此时10.1.116.0/24仅在software层面进行存储； 而另一端的N3K-B把SVI 116的路由正确地存储于其硬件LPM表中。<br>3）后续当N3K-A从上联ASA-A收到hit路由10.11.116.0/24的数据包时，N3K-1先查询硬件LPM table，发现没有对应Entry，于是上到CPU进行处理<br>4）通常数据包意外上到CPU处理会带来高延时现象，因为软件层面的处理相对于硬件处理来说是很慢的，所以我们实际中也有看到这么个现象：N3K-A发出从VLAN116 PC过来的ICMP Request以及从ASA-A收到ICMP Reply是在相当短的时间内完成的，但N3K-A却用了相当长的时间把ICMP Reply回响给PC(因为此时的ICMP Reply hit的是未被硬件编程的LPM路由SVI116 10.11.116.0/24)，所以在PC上看ping的延时很大。<br>5）当延时过高时，就会带来丢包现象，所以当时故障现象中大约看到了10%的丢包</p>
+<p>执行workaround ‘shutdown N3K-A SVI 116’后，为何能恢复？</p>
+<p>6）shutdown N3K-1 SVI 116，带来的结果是：N3K-1抑制了EIGRP将SVI 116路由信息通告给上联ASA-A，也就是ASA-A关于去往SVI 116网络的路由下一跳从N3K-A的SVI 116变成了N3K-B的SVI 116。<br>7) 基于上述结果，当shut N3K-A SVI 116后，N3K-A从ASA-A收到的ARP Reply中，目的MAC为N3K-B SVI 116（上联Po41是二层口）<br>8）数据包到达N3K-A后，做二层透传，基于N3K-B SVI 116 MAC查MAC地址表，将数据包发给N3K-B，N3K-B收到数据包，由于目的MAC是自己，所以基于硬件LPM Table做三层转发（此时N3K-B上SVI 116所在路由正确编程在硬件LPM Table中），所以这里的三层转发耗时很短，随后基于本端的ARP Table将目的MAC重写为PC MAC，并发给下联接入，所以这个过程中PC的ping包延时正常。</p>
+<p>基于上述分析的建议</p>
+<ul>
+<li>对路由进行Summary汇总，从而释放一些LPM Table的存储空间。</li>
+<li>system urpf disable，扩容一倍LPM空间</li>
+</ul>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/11/22/%E8%AE%B0%E4%B8%80%E4%B8%AA%E7%BB%84%E6%92%AD%E4%B8%8D%E9%80%9A%E9%97%AE%E9%A2%98/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1532,139 +1696,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/05/10/erspan-packet-loss/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="cfc">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="fucchen.dc">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2020/05/10/erspan-packet-loss/" itemprop="url">启用erspan truncation后丢包</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-05-10T13:04:42+08:00">
-                2020-05-10
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <ul>
-<li>涉及的主机名/IP/MAC/端口编号已改</li>
-</ul>
-<h3 id="故障描述"><a href="#故障描述" class="headerlink" title="故障描述"></a>故障描述</h3><p>由于问题能在LAB重现，就直接描述LAB的情况了</p>
-<p>拓扑</p>
-<p><img src="/images/erspan1-1.png" alt="erspan1-1 topo"></p>
-<p>1/ IXIA向N9K-09推300pps的tcp流量，packet size == 2000</p>
-<p>2/ N9K-09上配置了erspan将e1/4收到的流量copy一份，并发生到erspan destination 3172上，erspan传输路径如拓扑所示</p>
-<p>3/ 为了控制erspan流量大小，在N9K做了erspan truncation，即在erspan session中配置了MTU 1000</p>
-<p>4/ 3172上用ethanalyzer抓包，看不到任何erspan流量</p>
-<h3 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h3><p>1/ IXIA打出来的frame size以及原始IP header中的length是2000，启用erspan truncation后，frame size被强行截成1000+erspan header size，所以把沿途传输的erspan包抓下来如下，对于inner ip header，wireshark显示IPv4 total length exceed packet length</p>
-<p><img src="/images/erspan1-3.png" alt="erspan1-3 topo"></p>
-<p>N9K默认会检查包的IP header length部分，对于IP-IP tunnel的报文(此处是erspan)会检查内外层ip header的length做校验，和frame size进行比较，看是否有异常，所以这个包来说，由于包被截过，导致inner ip header length &gt; frame size，这样的包会被N9K-08认做错包，记output error错包从Po20，又N9K默认是cut-through模式，所以沿途N9K能看到的现象是，N9K-04入接口有input error，N9K-04出接口有output error，最后3172收到后也记input error，包在接口丢弃，故ethanalyzer抓不到erspan流量</p>
-<h3 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h3><p>关闭inner packet length校验功能，关闭后output error / input error问题消失，并且3172就能通过ethanalyzer收到所有erspan流量了</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1715,7 +1746,7 @@
               
                 <a href="/archives/%20%7C%7C%20archive">
               
-                  <span class="site-state-item-count">14</span>
+                  <span class="site-state-item-count">15</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
