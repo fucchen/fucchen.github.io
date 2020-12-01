@@ -79,16 +79,16 @@
 
 
 
-<meta name="description" content="故障描述拓扑   部分VLAN如VLAN 116下的PC(10.11.116.7)访问外网Server(10.128.5.117)时延时大，并有10%左右的丢包 VLAN116的网关在两台做vPC的N3K上，2960双上联到两台N3K ASA-A为主墙，ASA-B为备墙 客户在N3K-A上联口下联口同时抓包，发现N3K-A向上发出icmp request到收到icmp reply时间差很短，但对比">
+<meta name="description" content="故障描述拓扑   部分VLAN如VLAN 116下的PC(10.11.116.7)访问外网Server(10.1.6.155)时延时大，并有10%左右的丢包 VLAN116的网关在两台做vPC的N3K上，2960双上联到两台N3K ASA-A为主墙，ASA-B为备墙 客户在N3K-A上联口下联口同时抓包，发现N3K-A向上发出icmp request到收到icmp reply时间差很短，但对比N3">
 <meta property="og:type" content="article">
 <meta property="og:title" content="路由软硬件不一致产生延时丢包问题">
 <meta property="og:url" content="http://yoursite.com/2020/12/01/%E8%B7%AF%E7%94%B1%E8%BD%AF%E7%A1%AC%E4%BB%B6%E4%B8%8D%E4%B8%80%E8%87%B4%E4%BA%A7%E7%94%9F%E5%BB%B6%E6%97%B6%E4%B8%A2%E5%8C%85%E9%97%AE%E9%A2%98/index.html">
 <meta property="og:site_name" content="fucchen.dc">
-<meta property="og:description" content="故障描述拓扑   部分VLAN如VLAN 116下的PC(10.11.116.7)访问外网Server(10.128.5.117)时延时大，并有10%左右的丢包 VLAN116的网关在两台做vPC的N3K上，2960双上联到两台N3K ASA-A为主墙，ASA-B为备墙 客户在N3K-A上联口下联口同时抓包，发现N3K-A向上发出icmp request到收到icmp reply时间差很短，但对比">
+<meta property="og:description" content="故障描述拓扑   部分VLAN如VLAN 116下的PC(10.11.116.7)访问外网Server(10.1.6.155)时延时大，并有10%左右的丢包 VLAN116的网关在两台做vPC的N3K上，2960双上联到两台N3K ASA-A为主墙，ASA-B为备墙 客户在N3K-A上联口下联口同时抓包，发现N3K-A向上发出icmp request到收到icmp reply时间差很短，但对比N3">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://yoursite.com/images/lpm-1-1.png">
 <meta property="article:published_time" content="2020-12-01T06:54:21.000Z">
-<meta property="article:modified_time" content="2020-12-01T10:32:17.437Z">
+<meta property="article:modified_time" content="2020-12-01T10:40:06.148Z">
 <meta property="article:author" content="cfc">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://yoursite.com/images/lpm-1-1.png">
@@ -338,7 +338,7 @@
         <h3 id="故障描述"><a href="#故障描述" class="headerlink" title="故障描述"></a>故障描述</h3><p>拓扑</p>
 <p><img src="/images/lpm-1-1.png" alt="lpm-1-1 topo"></p>
 <ul>
-<li>部分VLAN如VLAN 116下的PC(10.11.116.7)访问外网Server(10.128.5.117)时延时大，并有10%左右的丢包</li>
+<li>部分VLAN如VLAN 116下的PC(10.11.116.7)访问外网Server(10.1.6.155)时延时大，并有10%左右的丢包</li>
 <li>VLAN116的网关在两台做vPC的N3K上，2960双上联到两台N3K</li>
 <li>ASA-A为主墙，ASA-B为备墙</li>
 <li>客户在N3K-A上联口下联口同时抓包，发现N3K-A向上发出icmp request到收到icmp reply时间差很短，但对比N3K-A从收到icmp reply到将该reply发送到下联口的时间差较大，故初步判断延时是由N3K-A产生，客户shutdown N3K-A SVI116，故障恢复</li>
