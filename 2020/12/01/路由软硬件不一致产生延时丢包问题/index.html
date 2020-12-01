@@ -88,7 +88,7 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://yoursite.com/images/lpm-1-1.png">
 <meta property="article:published_time" content="2020-12-01T06:54:21.000Z">
-<meta property="article:modified_time" content="2020-12-01T10:15:46.397Z">
+<meta property="article:modified_time" content="2020-12-01T10:32:17.437Z">
 <meta property="article:author" content="cfc">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://yoursite.com/images/lpm-1-1.png">
@@ -344,8 +344,8 @@
 <li>客户在N3K-A上联口下联口同时抓包，发现N3K-A向上发出icmp request到收到icmp reply时间差很短，但对比N3K-A从收到icmp reply到将该reply发送到下联口的时间差较大，故初步判断延时是由N3K-A产生，客户shutdown N3K-A SVI116，故障恢复</li>
 </ul>
 <h3 id="排查过程"><a href="#排查过程" class="headerlink" title="排查过程"></a>排查过程</h3><p>1/ 丢包期间N3K-A上copp上的class-map copp-s-l3destmiss丢包计数不断增长</p>
-<p>1st<br>    class-map copp-s-l3destmiss (match-any)<br>      police pps 100<br>        OutPackets    34435805<br>        DropPackets   848325        &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</p>
-<p>2nd<br>    class-map copp-s-l3destmiss (match-any)<br>      police pps 100<br>        OutPackets    42958127<br>        DropPackets   868428        &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="number">1</span>st</span><br><span class="line">    <span class="class"><span class="keyword">class</span>-<span class="title">map</span> <span class="title">copp</span>-<span class="title">s</span>-<span class="title">l3destmiss</span> <span class="params">(match-any)</span></span></span><br><span class="line"><span class="class">      <span class="title">police</span> <span class="title">pps</span> 100 </span></span><br><span class="line"><span class="class">        <span class="title">OutPackets</span>    34435805</span></span><br><span class="line"><span class="class">        <span class="title">DropPackets</span>   848325		&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</span></span><br><span class="line"><span class="class"></span></span><br><span class="line"><span class="class">2<span class="title">nd</span></span></span><br><span class="line"><span class="class">    <span class="title">class</span>-<span class="title">map</span> <span class="title">copp</span>-<span class="title">s</span>-<span class="title">l3destmiss</span> <span class="params">(match-any)</span></span></span><br><span class="line"><span class="class">      <span class="title">police</span> <span class="title">pps</span> 100 </span></span><br><span class="line"><span class="class">        <span class="title">OutPackets</span>    42958127</span></span><br><span class="line"><span class="class">        <span class="title">DropPackets</span>   868428		&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</span></span><br></pre></td></tr></table></figure>
+
 <p>copp-s-l3destmiss含义如下</p>
 <p>Layer 3 traffic with a miss for the lookup in the hardware Layer 3 forwarding table.</p>
 <p>简单展开下，数据包到交换机后，L2查完若需要路由，在L3硬件表项中查询L3 dst ip，如果L3硬件表项中查不到，就会上到CPU进行软件处理，上CPU的流量都会被copp分类 &amp; 限速，L3硬件表项中查不到的这类流量就在copp-s-l3destmiss中计数，此时该class-map的DropPackets会不断增长，而当这样的实时流量超出系统为该class-map设置的阈值pps 100后，超出部分被丢弃，计在DropPackets中；所以基于此，可能是reply回包进入N3K-A，该数据包在硬件层面没有路由能匹配到它，于是回包都上CPU了。</p>
@@ -353,8 +353,8 @@
 <p>2019 May 10 14:26:12 N3K-A %$ VDC-1 %$ %IPFIB-2-FIB_TCAM_RESOURCE_EXHAUSTION_LPM_IPV4: FIB TCAM exhausted for IPV4 routes in LPM table</p>
 <p>该log表示LPM路由(longest prefix match)的硬件资源耗尽,非主机路由或者说是非/32位的路由都属于LPM路由</p>
 <p>3/ 检查N3K-A的硬件表项使用可以发现硬件LPM路由空间基本已经耗尽</p>
-<p>DS-DFA-N3K# show hardware profile status </p>
-<h1 id="slot-1"><a href="#slot-1" class="headerlink" title="slot  1"></a>slot  1</h1><p>Total LPM Entries = 7679.             &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;<br>Total Host Entries = 16384.<br>Reserved LPM Entries = 1024.<br>Max Host4/Host6 Limit Entries (shared)=  8192/4096*<br>Max Mcast Limit Entries = 4096.<br>Max IPv6 Mcast Limit Entries = 2048.<br>Max Ucast IPv6 LPM Limit Entries = 2048.<br>Max Ucast IPv6 LPM_65_to_127 Limit Entries = 128.<br>Used LPM Entries (Total) = 7676.     &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">N3K-A# show<span class="built_in"> hardware profile </span>status </span><br><span class="line"> </span><br><span class="line">slot  1</span><br><span class="line">=======</span><br><span class="line"> </span><br><span class="line">Total LPM Entries = 7679. 			&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</span><br><span class="line">Total Host Entries = 16384. </span><br><span class="line">Reserved LPM Entries = 1024. </span><br><span class="line">Max Host4/Host6 Limit Entries (shared)=  8192/4096* </span><br><span class="line">Max Mcast Limit Entries = 4096. </span><br><span class="line">Max<span class="built_in"> IPv6 </span>Mcast Limit Entries = 2048. </span><br><span class="line">Max Ucast<span class="built_in"> IPv6 </span>LPM Limit Entries = 2048. </span><br><span class="line">Max Ucast<span class="built_in"> IPv6 </span>LPM_65_to_127 Limit Entries = 128. </span><br><span class="line">Used LPM Entries (Total) = 7676. 	&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</span><br></pre></td></tr></table></figure>
+
 <p>由于N3K vlan116是/24为的，所以也是LPM路由，怀疑该路由没被硬件编程到LPM Table中</p>
 <p>4/ 检查两台N3K LPM路由的硬件编程情况，由于vlan116当时故障时没有相关信息没有记录到，这里以另一个路由举例，vrf test中的LPM路由10.128.4.0/22有较大延时</p>
 <p>先取vrf test的id，得到id为36，结合如下命令可以看到10.128.4.0/22没有在id为36的vrf中编程</p>
@@ -535,7 +535,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#故障描述"><span class="nav-number">1.</span> <span class="nav-text">故障描述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#排查过程"><span class="nav-number">2.</span> <span class="nav-text">排查过程</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#slot-1"><span class="nav-number"></span> <span class="nav-text">slot  1</span></a></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#故障描述"><span class="nav-number">1.</span> <span class="nav-text">故障描述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#排查过程"><span class="nav-number">2.</span> <span class="nav-text">排查过程</span></a></li></ol></div>
             
 
           </div>
