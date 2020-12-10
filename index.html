@@ -263,6 +263,129 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/12/10/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="cfc">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="fucchen.dc">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/12/10/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/" itemprop="url">正则表达式</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-12-10T18:15:27+08:00">
+                2020-12-10
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>匹配IP地址的正则表达式</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">pattern = re.compile(<span class="string">r'((2[0-4]\d|25[0-5]|1\d&#123;2&#125;|[1,9]\d?))\.((2[0-4]\d|25[0-5]|1\d&#123;2&#125;|[1,9]?\d)\.)&#123;2&#125;(2[0-4]\d|25[0-5]|1\d&#123;2&#125;|[1,9]?\d)\b'</span>)</span><br></pre></td></tr></table></figure>
+
+<p>回头再肢解解释</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/12/10/snmp-oid%E4%BD%BF%E7%94%A8%E7%A4%BA%E4%BE%8B/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1522,146 +1645,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/05/11/all-bgp-neighbor-down/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="cfc">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="fucchen.dc">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2020/05/11/all-bgp-neighbor-down/" itemprop="url">all bgp neighbor down</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-05-11T21:53:42+08:00">
-                2020-05-11
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h3 id="故障描述"><a href="#故障描述" class="headerlink" title="故障描述"></a>故障描述</h3><p>实际拓扑不好画，大概描述下，9516，和几百个TOR建了bgp邻居</p>
-<p>故障是bgp邻居全down，嗯还是两台9516都挂球子了，自行脑补这事儿炸毛的场景（万幸是客户冗余做得好，没什么实际业务影响）</p>
-<p>当时邻居全down后，客户把整机断电后开始要查，断电后通常syslog/bgp进程什么的log都刷没了，信息都不知道采什么，真酸爽。</p>
-<p>唯一能追溯到有用的log报只有下面两条。</p>
-<p>Could not allocate Attr. DB entry<br>BGP x.x.x.x shutdown due to no memory condition (Prefix cannot be added)</p>
-<h3 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h3><p>1/ 这个log的Attr是attribution的意思，其实就是bgp那些属性，AS_PATH / Community 这些</p>
-<p>2/ 一开始其实没有把重点放在属性这个东西上，原因是这个客户之前遇到过由于BMP耗尽BGP内存导致邻居down的类似故障，所以第一反应是BGP自己的内存又因为某某原因耗尽了，根据log，怀疑是故障前设备收到burst前缀把bgp内存耗尽导致邻居down（断电过也没法从log判断这一点），开始的方向也一直是每隔几小时观察BGP进程内存以及系统内存使用情况。观察了一段时间，发现也没异常增长。</p>
-<p>3/ 辗转了一会儿，意外发现，有个叫bgp share memory共享内存的东西，随着版本的不断迭代，不断扩容，后来证实bgp share memory正是存放bgp属性的地方，简单理解就是软件上给bgp前缀分了两块内存，其中一块内存专门放bgp前缀本身，另一块内存也就是共享内存专门存放bgp前缀所携带的属性</p>
-<p>4/ 检查了客户的共享内存利用率，确实都90%，有些95%以上了，有了这个理论基础，自然怀疑是当时共享内存爆了导致邻居down</p>
-<p>5/ 验证猜想，需要LAB重现，由于问题也在LAB复现了，所以说说LAB的复现情况</p>
-<p>IXIA和9508建若干bgp邻居</p>
-<p>IxNetwork不断打路由，并对这些路由随机附上一些random AS_PATH / community这些属性，LAB里单条前缀携带的属性会比较多</p>
-<p>在总共打了将近20w路由的时候，问题复现，并且bgp占用的共享内存以及bgp属性占用的内存不断增加，以下是打路由期间每隔5s共享内存的占用情况，可以看到18:25:27时接近突破了共享内存阈值，随后同时间点18:25:27 所有邻居带着和客户一样的log down了</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="number">18</span>:<span class="number">25</span>:<span class="number">10.895</span> GMT Mon Aug <span class="number">05</span> <span class="number">2019</span></span><br><span class="line"></span><br><span class="line">Time source <span class="keyword">is</span> NTP</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">show process mem shared | <span class="keyword">in</span> bgp</span><br><span class="line"></span><br><span class="line">bgp                    <span class="number">0X75128000</span>     <span class="number">65536</span>+ (<span class="number">65540</span>)   <span class="number">48645</span>      <span class="number">16891</span>      <span class="number">2</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="number">18</span>:<span class="number">25</span>:<span class="number">16.504</span> GMT Mon Aug <span class="number">05</span> <span class="number">2019</span></span><br><span class="line"></span><br><span class="line">Time source <span class="keyword">is</span> NTP</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">show process mem shared | <span class="keyword">in</span> bgp</span><br><span class="line"></span><br><span class="line">bgp                    <span class="number">0X75128000</span>     <span class="number">65536</span>+ (<span class="number">65540</span>)   <span class="number">54770</span>      <span class="number">10766</span>      <span class="number">2</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="number">18</span>:<span class="number">25</span>:<span class="number">22.115</span> GMT Mon Aug <span class="number">05</span> <span class="number">2019</span></span><br><span class="line"></span><br><span class="line">Time source <span class="keyword">is</span> NTP</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">show process mem shared | <span class="keyword">in</span> bgp</span><br><span class="line"></span><br><span class="line">bgp                    <span class="number">0X75128000</span>     <span class="number">65536</span>+ (<span class="number">65540</span>)   <span class="number">60876</span>       <span class="number">4660</span>      <span class="number">2</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="number">18</span>:<span class="number">25</span>:<span class="number">27.698</span> GMT Mon Aug <span class="number">05</span> <span class="number">2019</span></span><br><span class="line"></span><br><span class="line">Time source <span class="keyword">is</span> NTP</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">show process mem shared | <span class="keyword">in</span> bgp</span><br><span class="line"></span><br><span class="line">bgp                    <span class="number">0X75128000</span>     <span class="number">65536</span>+ (<span class="number">65540</span>)   <span class="number">65341</span>        <span class="number">195</span>      <span class="number">2</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="number">18</span>:<span class="number">25</span>:<span class="number">33.284</span> GMT Mon Aug <span class="number">05</span> <span class="number">2019</span></span><br><span class="line"></span><br><span class="line">Time source <span class="keyword">is</span> NTP</span><br></pre></td></tr></table></figure>
-
-<p>这个LAB干的事儿其实就是验证前缀的属性存在share memory里，并且在属性过多的时候，会把share memory撑爆，并且导致share memory直接大量释放，可以看到利用率几乎归零，然后bgp邻居集体down</p>
-<p>6/ 回过头看客户那儿的信息，基于邻居的数量以及从每个邻居学来的路由数量，估算大概齐单台9516就学到了近120w条路由，这些路由或多或少都携带了些属性，所以root cause大概率和我们的猜想一致。</p>
-<h3 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h3><p>1/ 优化网络，后来证实大部分路由都是无用路由，最后客户优化完印象中最后就剩几千条路由，优化后共享内存利用率是很低的</p>
-<p>2/ 9.3.1开始共享内存从64M扩到了256M，所以升级也可以</p>
-<p>回过头再看这个故障本身并不复杂，这里最关键的地方是故障重现，而复现方法无人尝试过，因此碰壁多次。</p>
-<p>该故障印象最深刻的地方是：在Youtube上自学用IxNetwork打各种路由 &amp; 建各种邻居的方法，解了case，也感谢同事们提出了写宝贵思路和方向。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1712,7 +1695,7 @@
               
                 <a href="/archives/%20%7C%7C%20archive">
               
-                  <span class="site-state-item-count">16</span>
+                  <span class="site-state-item-count">17</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
