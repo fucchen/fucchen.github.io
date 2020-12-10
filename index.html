@@ -263,6 +263,140 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/12/10/snmp-oid%E4%BD%BF%E7%94%A8%E7%A4%BA%E4%BE%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="cfc">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="fucchen.dc">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/12/10/snmp-oid%E4%BD%BF%E7%94%A8%E7%A4%BA%E4%BE%8B/" itemprop="url">snmp oid使用示例</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-12-10T13:06:42+08:00">
+                2020-12-10
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h3 id="假设获取e1-27收发光"><a href="#假设获取e1-27收发光" class="headerlink" title="假设获取e1/27收发光"></a>假设获取e1/27收发光</h3><p>Here’s an example to show you how to get rx/tx power of threshold</p>
+<p>Step1: find the index of e1/27 / RX power / TX power</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">$ ./snmpwalk.exe -v <span class="number">2</span>c -c cisco <span class="number">10.75</span><span class="number">.61</span><span class="number">.21</span> mib<span class="number">-2.47</span><span class="number">.1</span><span class="number">.1</span><span class="number">.1</span><span class="number">.1</span><span class="number">.7</span></span><br><span class="line"> </span><br><span class="line">SNMPv2-SMI::mib<span class="number">-2.47</span><span class="number">.1</span><span class="number">.1</span><span class="number">.1</span><span class="number">.1</span><span class="number">.7</span><span class="number">.48860</span> = STRING: <span class="string">"Transceiver(slot:1-port:7)"</span>                                                                                    &lt;&lt;&lt;        <span class="number">48860</span> represent e1/<span class="number">27</span></span><br><span class="line">…snip…</span><br><span class="line">SNMPv2-SMI::mib<span class="number">-2.47</span><span class="number">.1</span><span class="number">.1</span><span class="number">.1</span><span class="number">.1</span><span class="number">.7</span><span class="number">.300045763</span> = STRING: <span class="string">"Ethernet1/27 Lane 1 Transceiver Voltage Sensor"</span></span><br><span class="line">SNMPv2-SMI::mib<span class="number">-2.47</span><span class="number">.1</span><span class="number">.1</span><span class="number">.1</span><span class="number">.1</span><span class="number">.7</span><span class="number">.300045764</span> = STRING: <span class="string">"Ethernet1/27 Lane 1 Transceiver Bias Current Sensor"</span></span><br><span class="line">SNMPv2-SMI::mib<span class="number">-2.47</span><span class="number">.1</span><span class="number">.1</span><span class="number">.1</span><span class="number">.1</span><span class="number">.7</span><span class="number">.300045767</span> = STRING: <span class="string">"Ethernet1/27 Lane 1 Transceiver Temperature Sensor"</span></span><br><span class="line">SNMPv2-SMI::mib<span class="number">-2.47</span><span class="number">.1</span><span class="number">.1</span><span class="number">.1</span><span class="number">.1</span><span class="number">.7</span><span class="number">.300045773</span> = STRING: <span class="string">"Ethernet1/27 Lane 1 Transceiver Receive Power Sensor"</span>                &lt;&lt;&lt;        <span class="number">300045773</span> represent Rx Power</span><br><span class="line">SNMPv2-SMI::mib<span class="number">-2.47</span><span class="number">.1</span><span class="number">.1</span><span class="number">.1</span><span class="number">.1</span><span class="number">.7</span><span class="number">.300045774</span> = STRING: <span class="string">"Ethernet1/27 Lane 1 Transceiver Transmit Power Sensor"</span>                &lt;&lt;&lt;        <span class="number">300045774</span> represent Tx Power</span><br></pre></td></tr></table></figure>
+
+<p>Step2: get the rx/tx power of transceiver</p>
+<figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">$ ./snmpwalk.exe -v <span class="number">2</span>c -c cisco -t <span class="number">20</span> <span class="number">10.75</span><span class="number">.61</span><span class="number">.21</span> <span class="number">1.3</span><span class="number">.6</span><span class="number">.1</span><span class="number">.4</span><span class="number">.1</span><span class="number">.9</span><span class="number">.9</span><span class="number">.91</span><span class="number">.1</span><span class="number">.1</span><span class="number">.1</span><span class="number">.1</span><span class="number">.4</span></span><br><span class="line"> </span><br><span class="line">SNMPv2-SMI::enterprises<span class="number">.9</span><span class="number">.9</span><span class="number">.91</span><span class="number">.1</span><span class="number">.1</span><span class="number">.1</span><span class="number">.1</span><span class="number">.4</span><span class="number">.300045773</span> = INTEGER: <span class="number">-3746</span></span><br><span class="line">SNMPv2-SMI::enterprises<span class="number">.9</span><span class="number">.9</span><span class="number">.91</span><span class="number">.1</span><span class="number">.1</span><span class="number">.1</span><span class="number">.1</span><span class="number">.4</span><span class="number">.300045774</span> = INTEGER: <span class="number">0</span></span><br></pre></td></tr></table></figure>
+
+<p>Step3: Verify</p>
+<p>N93180EX-2(config)# show interface e1/27 transceiver details<br>Ethernet1/27<br>    transceiver is present<br>    type is 10Gbase-SR-S<br>    name is CISCO-OPLINK<br>    part number is TPP4XGDS0CCISE3G<br>    revision is 01<br>    serial number is OPM22280QN1<br>    nominal bitrate is 10300 MBit/sec<br>    Link length supported for 50/125um OM2 fiber is 82 m<br>    Link length supported for 62.5/125um fiber is 26 m<br>    Link length supported for 50/125um OM3 fiber is 300 m<br>    cisco id is 3<br>    cisco extended id number is 4<br>    cisco part number is 10-3105-01<br>    cisco product id is SFP-10G-SR-S</p>
+<pre><code>SFP Detail Diagnostics Information (internal calibration)</code></pre><hr>
+<pre><code>Current              Alarms                  Warnings
+Measurement     High        Low         High          Low</code></pre><hr>
+<p>  Temperature   28.87 C        75.00 C     -5.00 C     70.00 C        0.00 C<br>  Voltage        3.28 V         3.63 V      2.97 V      3.46 V        3.13 V<br>  Current           N/A        12.00 mA     0.50 mA    11.50 mA       1.00 mA<br>  Tx Power          N/A         1.99 dBm  -11.30 dBm   -1.00 dBm     -7.30 dBm<br>  Rx Power      -3.74 dBm       1.99 dBm  -13.97 dBm   -1.00 dBm     -9.91 dBm<br>  Transmit Fault Count = 0</p>
+<hr>
+<p>  Note: ++  high-alarm; +  high-warning; –  low-alarm; -  low-warning</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/12/01/%E8%B7%AF%E7%94%B1%E8%BD%AF%E7%A1%AC%E4%BB%B6%E4%B8%8D%E4%B8%80%E8%87%B4%E4%BA%A7%E7%94%9F%E5%BB%B6%E6%97%B6%E4%B8%A2%E5%8C%85%E9%97%AE%E9%A2%98/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1532,170 +1666,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/05/11/erspan-packet-loss-1/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="cfc">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="fucchen.dc">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2020/05/11/erspan-packet-loss-1/" itemprop="url">erspan丢包问题</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-05-11T20:32:06+08:00">
-                2020-05-11
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <ul>
-<li>涉及的主机名/IP/MAC/端口编号已改</li>
-</ul>
-<h3 id="故障描述"><a href="#故障描述" class="headerlink" title="故障描述"></a>故障描述</h3><p>由于问题能在LAB重现，就直接描述LAB的情况了</p>
-<p>拓扑最小化精简了如下，确定实际转发路径前，网络涉及的设备估计至少20台以上</p>
-<p><img src="/images/erspan1-1.png" alt="erspan1-1 topo"></p>
-<p>1/ IXIA向N9K-09推300pps的tcp流量，packet size == 2000</p>
-<p>2/ N9K-09上配置了erspan将e1/4收到的流量copy一份，并发生到erspan destination 3172上，erspan传输路径如拓扑所示</p>
-<p>3/ 3172上用ethanalyzer抓包，看不到任何erspan流量，这个地方取决于原始流量大小，有小包的话，小包可能不丢</p>
-<p>4/ 整体环境是EVPN的VxLAN环境，图中N9K-09 / N9K-08 / N9K-04都是VxLAN VTEP，但实际erspan走的是vrf default，沿途实际走的是underlay ospf/ipv4 bgp的路径</p>
-<p>5/ N9K-08 SVI101以及N9K-04是3172的网关，VLAN101是non-vxlan vlan，属于default vrf，N9K-08连N9K-09的口是L3物理口，连N9K-04的口是L2 trunk，并且native vlan不是101</p>
-<h3 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h3><p>1/ 这种上来拓扑很大的问题，第一步最好能捋清楚实际转发路径并确定丢包点</p>
-<p>2/ 刚开始用的方法是ACL看流统，但是实际有太多流量干扰，加上VxLAN环境下做ACL有些限制，所以索性放弃ACL。由于现网流量大，所以直接看counter计数或者SPAN_TO_CPU逐跳抓包的方式也不现实，不考虑。</p>
-<p>3/ 换个方法，对erspan流提前写好ELAM配置，然后从配置erspan的第一跳N9K-09开始，做show forwarding route vrf default + ELAM，确定流量实际的出接口，并看ELAM是否显示丢包。每一个出接口确定后，到对应的lldp邻居。这一步连续做几次可以捋出实际转发穿越的路径，进一步简化后如上述拓扑所示</p>
-<p>4/ 第三步一直追溯到N9K-08时，发现ELAM显示有丢包，显示mtu-failure</p>
-<p>5/ 于是检查流量穿越的所有L2物理口/L3物理口/L3 SVI,发现直连erspan destination的SVI 101的MTU是1500，没改成9216，导致收到大包都记成mtu-failure流量，并上到CPU，当这样的流量速率超出copp设置的阈值时，copp丢包</p>
-<p>6/ 把MTU的问题修复后，N9K-08显示不再丢包，第一个丢包点解决，继续排查，在N9K-08做ELAM，结果如下：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="number">9</span>K<span class="number">-08</span>(TAH-elam-insel6)<span class="comment"># report</span></span><br><span class="line">Initting block addresses</span><br><span class="line"> </span><br><span class="line">ELAM <span class="keyword">not</span> triggered yet on slot - <span class="number">1</span>, asic - <span class="number">0</span>, slice - <span class="number">0</span></span><br><span class="line"> </span><br><span class="line">SUGARBOWL ELAM REPORT SUMMARY</span><br><span class="line">slot - <span class="number">1</span>, asic - <span class="number">0</span>, slice - <span class="number">1</span></span><br><span class="line">============================</span><br><span class="line"> </span><br><span class="line">Incoming Interface: Eth1/<span class="number">50</span>					&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt; 流量入接口</span><br><span class="line">Src Idx : <span class="number">0xc5</span>, Src BD : <span class="number">4152</span>				&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt; 流量出接口，需要结合<span class="string">'show interface hardware-mapping'</span>找这些索引对应的实际物理接口</span><br><span class="line">Outgoing Interface Info: dmod <span class="number">1</span>, dpid <span class="number">64</span></span><br><span class="line">Dst Idx : <span class="number">0x601</span>, Dst BD : <span class="number">101</span>      			&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt; BD就是VLAN_ID，这里显示<span class="number">101</span>表示带上dot1q vlan_id <span class="number">101</span>发出去，没什么问题，<span class="number">101</span>就是server <span class="number">3172</span>所在的VLAN                                                                   </span><br><span class="line"> </span><br><span class="line">Packet Type: IPv4</span><br><span class="line"> </span><br><span class="line">Dst MAC address: CC:<span class="number">16</span>:<span class="number">7</span>E:<span class="number">7</span>D:<span class="number">8</span>D:<span class="number">59</span></span><br><span class="line">Src MAC address: <span class="number">2</span>C:<span class="number">33</span>:<span class="number">11</span>:EB:BE:<span class="number">13</span></span><br><span class="line"> </span><br><span class="line">Dst IPv4 address: <span class="number">10.51</span><span class="number">.208</span><span class="number">.122</span></span><br><span class="line">Src IPv4 address: <span class="number">10.212</span><span class="number">.255</span><span class="number">.123</span></span><br><span class="line">Ver     =  <span class="number">4</span>, DSCP    =    <span class="number">0</span>, Don<span class="string">'t Fragment = 0</span></span><br><span class="line"><span class="string">Proto   = 47, TTL     =  255, More Fragments = 0</span></span><br><span class="line"><span class="string">Hdr len = 20, Pkt len = 2032, Checksum       = 0xd6e8</span></span><br><span class="line"><span class="string"> </span></span><br><span class="line"><span class="string">L4 Protocol  : 47</span></span><br><span class="line"><span class="string"> </span></span><br><span class="line"><span class="string">Drop Info:</span></span><br><span class="line"><span class="string">----------</span></span><br><span class="line"><span class="string"> </span></span><br><span class="line"><span class="string">LUA:</span></span><br><span class="line"><span class="string">LUB:</span></span><br><span class="line"><span class="string">LUC:</span></span><br><span class="line"><span class="string">LUD:</span></span><br><span class="line"><span class="string">Final Drops:</span></span><br></pre></td></tr></table></figure>
-
-<p>7/ N9K04也做个ELAM如下：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">F340<span class="number">.08</span><span class="number">.25</span>-N9K-C93108<span class="number">-4</span>(TAH-elam-insel6)<span class="comment"># report</span></span><br><span class="line">Initting block addresses</span><br><span class="line"> </span><br><span class="line">ELAM <span class="keyword">not</span> triggered yet on slot - <span class="number">1</span>, asic - <span class="number">0</span>, slice - <span class="number">0</span></span><br><span class="line"> </span><br><span class="line">SUGARBOWL ELAM REPORT SUMMARY</span><br><span class="line">slot - <span class="number">1</span>, asic - <span class="number">0</span>, slice - <span class="number">1</span></span><br><span class="line">============================</span><br><span class="line"> </span><br><span class="line">Incoming Interface: Eth1/<span class="number">49</span></span><br><span class="line">Src Idx : <span class="number">0x601</span>, Src BD : <span class="number">1</span>                        &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt; 收到包后识别的vlan_id是错的，应该是上方的<span class="number">101</span>才对</span><br><span class="line">Outgoing Interface Info: dmod <span class="number">0</span>, dpid <span class="number">0</span>            &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt; 所以出接口是错的</span><br><span class="line">Dst Idx : <span class="number">0x0</span>, Dst BD : <span class="number">1</span></span><br><span class="line"> </span><br><span class="line">Packet Type: IPv4</span><br><span class="line"> </span><br><span class="line">Dst MAC address: B0:AA:<span class="number">77</span>:<span class="number">49</span>:<span class="number">19</span>:<span class="number">3</span>C</span><br><span class="line">Src MAC address: CC:<span class="number">16</span>:<span class="number">7</span>E:<span class="number">7</span>D:<span class="number">8</span>D:<span class="number">59</span></span><br><span class="line"> </span><br><span class="line">Dst IPv4 address: <span class="number">10.51</span><span class="number">.208</span><span class="number">.122</span></span><br><span class="line">Src IPv4 address: <span class="number">10.212</span><span class="number">.255</span><span class="number">.123</span></span><br><span class="line">Ver     =  <span class="number">4</span>, DSCP    =    <span class="number">0</span>, Don<span class="string">'t Fragment = 0</span></span><br><span class="line"><span class="string">Proto   = 47, TTL     =  255, More Fragments = 0</span></span><br><span class="line"><span class="string">Hdr len = 20, Pkt len = 2032, Checksum       = 0xd69d</span></span><br><span class="line"><span class="string"> </span></span><br><span class="line"><span class="string">L4 Protocol  : 47</span></span><br><span class="line"><span class="string"> </span></span><br><span class="line"><span class="string">Drop Info:</span></span><br><span class="line"><span class="string">----------</span></span><br><span class="line"><span class="string"> </span></span><br><span class="line"><span class="string">LUA:</span></span><br><span class="line"><span class="string">LUB:</span></span><br><span class="line"><span class="string">LUC:</span></span><br><span class="line"><span class="string">LUD:</span></span><br><span class="line"><span class="string">  SRC_VLAN_MBR</span></span><br><span class="line"><span class="string">Final Drops:</span></span><br><span class="line"><span class="string">  SRC_VLAN_MBR                                    &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt; elam显示有drop reason的时候，就代表包被丢在这台设备上了</span></span><br></pre></td></tr></table></figure>
-
-<p>8/ 所以第二个丢包点也很明朗了，要么是N9K-08发出包的时候实际没打VLAN TAG，要么是N9K-04收到正确的VLAN TAG但识别错vlan_id</p>
-<p>把这些东西汇总下搜搜bug，找到个匹配的CSCvr72258 ERPSAN traffic flowing though Sugarbowl exits untagged.</p>
-<p>bug触发条件以及workaround如下：</p>
-<p>Conditions:<br>A nexus 9300-EX must be in the following configuration:</p>
-<ul>
-<li>A VxLAN uplink toward spines<ul>
-<li>A L3 interface on which the ERSPAN encapsulated traffic arrives</li>
-<li>A L2 Trunk interface on which the ERSPAN traffic is exiting</li>
-</ul>
-</li>
-</ul>
-<p>ERSPAN traffic:</p>
-<ul>
-<li>The destination IP (end of the tunnel) resides in a vlan that is extedend over VxLAN (VNI mapping)  &lt;&lt;&lt;&lt; 这条不需要满足也会有这个问题</li>
-<li>The ERSPAN traffic is not crossing the VxLAN fabric</li>
-</ul>
-<p>Workaround:<br>Change the ingress interface from L3 to L2 (access or trunk)<br>Or<br>Use system nve infra-vlans  when the vlan’s SVI is in default VRF</p>
-<p>简单说就是一台VxLAN VTEP设备，从连spine的L3口收到erspan流量的时候，并且准备将该流量从一个L2 trunk转发出去的时候，这个dot1q vlan tag会没打上就发出去，导致的结果就是下游设备收到带VLAN TAG的正常erspan流量，导致包全在下游设备丢弃。</p>
-<h3 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h3><p>这个问题有好几个workaround，</p>
-<p>1/ 让包出去的时候，不打TAG也能让下游识别成VLAN 101，所以自然是把这个trunk链路的native vlan改成101，这样N9K-08发出不带VLAN TAG的流量，下游就直接认为是VLAN101，这个LAB测试过可行。 但这个可能实际网络中没条件改，</p>
-<p>2/ 把VLAN 101关联到infra-vlan中，这个LAB测试可行，最后客户也用的这种，infra-vlan典型的两个场景是：VTEP传IP-IP tunnel流量 &amp; vPC vxlan leaf对应uplink failover场景跨peer-link建bgp邻居等涉及流量备用路径的功能，有机会的话专门写一篇infra-vlan介绍。一般推荐把VTEP上的default vlan关联到infra-vlan，来传一些特殊的非vxlan流量。</p>
-<p>3/ 流量入接口改成L2，感觉已经成型的有业务的网络，不太可能用这种，所以LAB也没再去验证可行性。</p>
-<p>这个故障本身还算复杂，加上中间还衍生了很多其他问题，这里也只是记录了其中一个，所有问题彻底搞完消耗了很多精力，不过好在全解了，也算欣慰，完结撒花！！！</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1746,7 +1716,7 @@
               
                 <a href="/archives/%20%7C%7C%20archive">
               
-                  <span class="site-state-item-count">15</span>
+                  <span class="site-state-item-count">16</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>

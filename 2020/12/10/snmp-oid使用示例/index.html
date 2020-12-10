@@ -79,13 +79,15 @@
 
 
 
+<meta name="description" content="假设获取e1&#x2F;27收发光Here’s an example to show you how to get rx&#x2F;tx power of threshold Step1: find the index of e1&#x2F;27 &#x2F; RX power &#x2F; TX power 12345678910$ .&#x2F;snmpwalk.exe -v 2c -c cisco 10.75.61.21 mib-2.47.1.1.1">
 <meta property="og:type" content="article">
-<meta property="og:title" content="ospf&#x2F;eigrp flap caused by peer-gateway">
-<meta property="og:url" content="http://yoursite.com/2020/11/06/ospf-eigrp-flap-caused-by-peer-gateway/index.html">
+<meta property="og:title" content="snmp oid使用示例">
+<meta property="og:url" content="http://yoursite.com/2020/12/10/snmp-oid%E4%BD%BF%E7%94%A8%E7%A4%BA%E4%BE%8B/index.html">
 <meta property="og:site_name" content="fucchen.dc">
+<meta property="og:description" content="假设获取e1&#x2F;27收发光Here’s an example to show you how to get rx&#x2F;tx power of threshold Step1: find the index of e1&#x2F;27 &#x2F; RX power &#x2F; TX power 12345678910$ .&#x2F;snmpwalk.exe -v 2c -c cisco 10.75.61.21 mib-2.47.1.1.1">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2020-11-06T11:33:50.000Z">
-<meta property="article:modified_time" content="2020-11-06T11:33:50.339Z">
+<meta property="article:published_time" content="2020-12-10T05:06:42.000Z">
+<meta property="article:modified_time" content="2020-12-10T05:11:22.163Z">
 <meta property="article:author" content="cfc">
 <meta name="twitter:card" content="summary">
 
@@ -117,13 +119,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2020/11/06/ospf-eigrp-flap-caused-by-peer-gateway/"/>
+  <link rel="canonical" href="http://yoursite.com/2020/12/10/snmp-oid使用示例/"/>
 
 
 
 
 
-  <title>ospf/eigrp flap caused by peer-gateway | fucchen.dc</title>
+  <title>snmp oid使用示例 | fucchen.dc</title>
   
 
 
@@ -264,7 +266,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/11/06/ospf-eigrp-flap-caused-by-peer-gateway/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/12/10/snmp-oid%E4%BD%BF%E7%94%A8%E7%A4%BA%E4%BE%8B/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="cfc">
@@ -281,7 +283,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">ospf/eigrp flap caused by peer-gateway</h1>
+          <h1 class="post-title" itemprop="name headline">snmp oid使用示例</h1>
         
 
         <div class="post-meta">
@@ -293,8 +295,8 @@
               
                 <span class="post-meta-item-text">Posted on</span>
               
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-06T19:33:50+08:00">
-                2020-11-06
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-12-10T13:06:42+08:00">
+                2020-12-10
               </time>
             
 
@@ -331,7 +333,22 @@
       
 
       
-        
+        <h3 id="假设获取e1-27收发光"><a href="#假设获取e1-27收发光" class="headerlink" title="假设获取e1/27收发光"></a>假设获取e1/27收发光</h3><p>Here’s an example to show you how to get rx/tx power of threshold</p>
+<p>Step1: find the index of e1/27 / RX power / TX power</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">$ ./snmpwalk.exe -v <span class="number">2</span>c -c cisco <span class="number">10.75</span><span class="number">.61</span><span class="number">.21</span> mib<span class="number">-2.47</span><span class="number">.1</span><span class="number">.1</span><span class="number">.1</span><span class="number">.1</span><span class="number">.7</span></span><br><span class="line"> </span><br><span class="line">SNMPv2-SMI::mib<span class="number">-2.47</span><span class="number">.1</span><span class="number">.1</span><span class="number">.1</span><span class="number">.1</span><span class="number">.7</span><span class="number">.48860</span> = STRING: <span class="string">"Transceiver(slot:1-port:7)"</span>                                                                                    &lt;&lt;&lt;        <span class="number">48860</span> represent e1/<span class="number">27</span></span><br><span class="line">…snip…</span><br><span class="line">SNMPv2-SMI::mib<span class="number">-2.47</span><span class="number">.1</span><span class="number">.1</span><span class="number">.1</span><span class="number">.1</span><span class="number">.7</span><span class="number">.300045763</span> = STRING: <span class="string">"Ethernet1/27 Lane 1 Transceiver Voltage Sensor"</span></span><br><span class="line">SNMPv2-SMI::mib<span class="number">-2.47</span><span class="number">.1</span><span class="number">.1</span><span class="number">.1</span><span class="number">.1</span><span class="number">.7</span><span class="number">.300045764</span> = STRING: <span class="string">"Ethernet1/27 Lane 1 Transceiver Bias Current Sensor"</span></span><br><span class="line">SNMPv2-SMI::mib<span class="number">-2.47</span><span class="number">.1</span><span class="number">.1</span><span class="number">.1</span><span class="number">.1</span><span class="number">.7</span><span class="number">.300045767</span> = STRING: <span class="string">"Ethernet1/27 Lane 1 Transceiver Temperature Sensor"</span></span><br><span class="line">SNMPv2-SMI::mib<span class="number">-2.47</span><span class="number">.1</span><span class="number">.1</span><span class="number">.1</span><span class="number">.1</span><span class="number">.7</span><span class="number">.300045773</span> = STRING: <span class="string">"Ethernet1/27 Lane 1 Transceiver Receive Power Sensor"</span>                &lt;&lt;&lt;        <span class="number">300045773</span> represent Rx Power</span><br><span class="line">SNMPv2-SMI::mib<span class="number">-2.47</span><span class="number">.1</span><span class="number">.1</span><span class="number">.1</span><span class="number">.1</span><span class="number">.7</span><span class="number">.300045774</span> = STRING: <span class="string">"Ethernet1/27 Lane 1 Transceiver Transmit Power Sensor"</span>                &lt;&lt;&lt;        <span class="number">300045774</span> represent Tx Power</span><br></pre></td></tr></table></figure>
+
+<p>Step2: get the rx/tx power of transceiver</p>
+<figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">$ ./snmpwalk.exe -v <span class="number">2</span>c -c cisco -t <span class="number">20</span> <span class="number">10.75</span><span class="number">.61</span><span class="number">.21</span> <span class="number">1.3</span><span class="number">.6</span><span class="number">.1</span><span class="number">.4</span><span class="number">.1</span><span class="number">.9</span><span class="number">.9</span><span class="number">.91</span><span class="number">.1</span><span class="number">.1</span><span class="number">.1</span><span class="number">.1</span><span class="number">.4</span></span><br><span class="line"> </span><br><span class="line">SNMPv2-SMI::enterprises<span class="number">.9</span><span class="number">.9</span><span class="number">.91</span><span class="number">.1</span><span class="number">.1</span><span class="number">.1</span><span class="number">.1</span><span class="number">.4</span><span class="number">.300045773</span> = INTEGER: <span class="number">-3746</span></span><br><span class="line">SNMPv2-SMI::enterprises<span class="number">.9</span><span class="number">.9</span><span class="number">.91</span><span class="number">.1</span><span class="number">.1</span><span class="number">.1</span><span class="number">.1</span><span class="number">.4</span><span class="number">.300045774</span> = INTEGER: <span class="number">0</span></span><br></pre></td></tr></table></figure>
+
+<p>Step3: Verify</p>
+<p>N93180EX-2(config)# show interface e1/27 transceiver details<br>Ethernet1/27<br>    transceiver is present<br>    type is 10Gbase-SR-S<br>    name is CISCO-OPLINK<br>    part number is TPP4XGDS0CCISE3G<br>    revision is 01<br>    serial number is OPM22280QN1<br>    nominal bitrate is 10300 MBit/sec<br>    Link length supported for 50/125um OM2 fiber is 82 m<br>    Link length supported for 62.5/125um fiber is 26 m<br>    Link length supported for 50/125um OM3 fiber is 300 m<br>    cisco id is 3<br>    cisco extended id number is 4<br>    cisco part number is 10-3105-01<br>    cisco product id is SFP-10G-SR-S</p>
+<pre><code>SFP Detail Diagnostics Information (internal calibration)</code></pre><hr>
+<pre><code>Current              Alarms                  Warnings
+Measurement     High        Low         High          Low</code></pre><hr>
+<p>  Temperature   28.87 C        75.00 C     -5.00 C     70.00 C        0.00 C<br>  Voltage        3.28 V         3.63 V      2.97 V      3.46 V        3.13 V<br>  Current           N/A        12.00 mA     0.50 mA    11.50 mA       1.00 mA<br>  Tx Power          N/A         1.99 dBm  -11.30 dBm   -1.00 dBm     -7.30 dBm<br>  Rx Power      -3.74 dBm       1.99 dBm  -13.97 dBm   -1.00 dBm     -9.91 dBm<br>  Transmit Fault Count = 0</p>
+<hr>
+<p>  Note: ++  high-alarm; +  high-warning; –  low-alarm; -  low-warning</p>
+
       
     </div>
     
@@ -355,8 +372,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2020/05/11/ospf-stuck-in-exstart/" rel="next" title="MTU问题导致ospf卡在EXSTART状态">
-                <i class="fa fa-chevron-left"></i> MTU问题导致ospf卡在EXSTART状态
+              <a href="/2020/12/01/%E8%B7%AF%E7%94%B1%E8%BD%AF%E7%A1%AC%E4%BB%B6%E4%B8%8D%E4%B8%80%E8%87%B4%E4%BA%A7%E7%94%9F%E5%BB%B6%E6%97%B6%E4%B8%A2%E5%8C%85%E9%97%AE%E9%A2%98/" rel="next" title="路由软硬件不一致产生延时丢包问题">
+                <i class="fa fa-chevron-left"></i> 路由软硬件不一致产生延时丢包问题
               </a>
             
           </div>
@@ -364,10 +381,6 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2020/11/07/%E8%AE%B0%E4%B8%80%E4%B8%AA%E9%9D%99%E6%80%81%E8%B7%AF%E7%94%B1%E5%BC%95%E8%B5%B7%E7%9A%84%E7%8E%AF%E8%B7%AF%E9%97%AE%E9%A2%98/" rel="prev" title="一个静态路由引起的环路问题">
-                一个静态路由引起的环路问题 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -419,8 +432,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -471,6 +493,22 @@
         </div>
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#假设获取e1-27收发光"><span class="nav-number">1.</span> <span class="nav-text">假设获取e1&#x2F;27收发光</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
