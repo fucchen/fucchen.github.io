@@ -493,6 +493,17 @@
   <entry>
     <title>vPC</title>
     <url>/2020/12/30/vPC/</url>
-    <content><![CDATA[]]></content>
+    <content><![CDATA[<p>vPC汇总</p>
+<p>vPC role选举规则</p>
+<p>vPC master sticky-bit set to 0 or 1<br>User-defined vPC role priority (Cisco NX-OS software uses the lowest numeric value to elect the primary device)<br>System mac address value (Cisco NX-OS software uses the lowest MAC address to elect the primary device)</p>
+<p>vPC Peer 1 Sticky Bit set to 1    vPC Peer 2 Sticky Bit set to 1    vPC Primary<br>False (0)                        False (0)                        Tie<br>True  (1)                        False (0)                        vPC Peer 1<br>False (0)                        True  (1)                        vPC Peer 2<br>True  (1)                        True  (1)                        Tie</p>
+<p>vPC auto-recovery两种使用场景</p>
+<p>1/ In a data center outage or power outage, both vPC peers comprising of Nexus 7000 Switches are down. Occasionally, only one of the peers can be restored. Since the other Nexus 7000 is still down, vPC peer-link as well as vPC peer-keepalive link are also down. In this scenario, vPC will not come up even for the Nexus 7000 which is already up. We had to remove all vpc configurations from the port-channel on that Nexus 7000 to get the port-channel working. When the other Nexus 7000 comes up then we have to again make configuration changes to include the vpc configuration for all vPC.Starting with 5.0(2), this behavior was taken care of by configuring reload restore command under vpc domain configuration.</p>
+<p>2/ For some reason vPC peer-link goes down. Since vPC peer-keepalive is still up, vPC secondary peer device brings down all its vPC member ports due to dual active detection. Hence all the traffic goes through vPC primary switch. For some reason, vPC primary switch also goes down. This will blackholed the traffic since vPC on secondary are still down because it had detected dual active detection before the vPC primary switch went down</p>
+<p>由于实际中可能遇到这两种场景, 推荐两台vPC设备配置auto-recovery功能</p>
+<p>Q1: 重新并网前为何需要确认B的sticky-bit是否为false</p>
+<p>Q2: 重新并网前为何需要disable auto-recovery</p>
+<p>A: 假设A&lt;–vPC–&gt;B, B被隔离出去, 待需要入网时, 假设B机并网时auto recovery是enable的, 若default的240s(6min)内vPC peer-link &amp; keepalive没有接入up, B机auto-recovery kick-in, vPC状态从non-establish –&gt; vPC Primary, 并且重要的是sticky bit置1, 若此时peer-link &amp; keepalive接入up &amp; A机sticky bit置0, vPC发生角色切换(B成primary, A成secondary), 网络中断, 若在B机收敛过程, peer-link断掉, A机再将所有vPC接口suspend, 基本网络就得瘫一会儿了</p>
+]]></content>
   </entry>
 </search>
